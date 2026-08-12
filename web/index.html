@@ -1,54 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notes</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <div id="view-login" class="view hidden">
-    <div class="login-card">
-      <div class="login-logo">N</div>
-      <h1 class="login-title">Notes</h1>
-      <p class="login-subtitle">Sign in with your name and password</p>
-      <form id="login-form" autocomplete="off">
-        <label class="field">
-          <span>Name</span>
-          <input id="login-name" name="name" type="text" placeholder="e.g. admin" required />
-        </label>
-        <label class="field">
-          <span>Password</span>
-          <input id="login-password" name="password" type="password" placeholder="••••••••" required />
-        </label>
-        <p id="login-error" class="error hidden"></p>
-        <button type="submit" class="btn btn-primary btn-block">Sign in</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="view-app" class="view hidden">
-    <header class="app-header">
-      <div class="app-header-inner">
-        <div class="breadcrumb">
-          <span class="breadcrumb-current">Patients</span>
-        </div>
-        <div class="user-area">
-          <span id="user-name" class="user-name"></span>
-          <button id="logout-btn" class="btn btn-ghost" type="button">Log out</button>
-        </div>
-      </div>
-    </header>
-    <main class="app-main">
-      <div class="section-head">
-        <h2>Patients</h2>
-        <p id="patient-count" class="section-subtitle"></p>
-      </div>
-      <div id="patients-grid" class="patients-grid"></div>
-      <div id="app-error" class="error hidden"></div>
-    </main>
-  </div>
-
-  <script src="app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notes</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

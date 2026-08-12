@@ -28,8 +28,8 @@ body {
   line-height: 1.5;
 }
 
-.hidden {
-  display: none !important;
+#root {
+  min-height: 100%;
 }
 
 .view {
@@ -38,7 +38,7 @@ body {
 
 /* ---- Login ---- */
 
-#view-login {
+.login-view {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,12 +131,17 @@ body {
   transform: translateY(1px);
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .btn-primary {
   background: var(--accent);
   color: #fff;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: var(--accent-dark);
 }
 
@@ -235,6 +240,9 @@ body {
   gap: 14px;
   box-shadow: var(--shadow);
   cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
   transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
 }
 
@@ -259,6 +267,8 @@ body {
 }
 
 .patient-info {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
@@ -280,15 +290,14 @@ body {
 .error {
   color: var(--danger);
   font-size: 14px;
-  margin-top: 12px;
 }
 
-#login-error {
+.login-error {
   margin: 0 0 16px;
   text-align: center;
 }
 
-#app-error {
+.app-error {
   margin-top: 20px;
   background: #fef2f2;
   border: 1px solid #fecaca;
