@@ -26,6 +26,29 @@ export interface TimeBlock {
   deleted: boolean;
 }
 
+export interface NoteCategory {
+  name: string;
+  iconName: string;
+}
+
+export interface Note {
+  id: string;
+  text: string;
+  shiftId: string;
+  noteDate: string;
+  updatedAt: string;
+  createdBy: number;
+  category?: NoteCategory | null;
+  deleted?: boolean;
+  photoCount?: number;
+}
+
+export interface Operator {
+  id: number;
+  name: string;
+  deleted?: boolean;
+}
+
 export class ApiError extends Error {
   status: number;
 
@@ -71,4 +94,6 @@ export const authApi = {
   patients: () => api<Patient[]>('/api/patients'),
   shifts: () => api<Shift[]>('/api/shifts'),
   timeBlocks: () => api<TimeBlock[]>('/api/time-blocks'),
+  notes: () => api<Note[]>('/api/notes'),
+  operators: () => api<Operator[]>('/api/operators'),
 };

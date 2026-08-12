@@ -5,6 +5,7 @@ interface ShiftsProps {
   me: Me;
   patient: Patient;
   onBack: () => void;
+  onSelectShift: (shift: Shift) => void;
   onLogout: () => void;
 }
 
@@ -14,7 +15,7 @@ function formatDate(value: string): string {
   return date.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function Shifts({ me, patient, onBack, onLogout }: ShiftsProps) {
+export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }: ShiftsProps) {
   const [shifts, setShifts] = useState<Shift[] | null>(null);
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
   const [error, setError] = useState('');
@@ -99,12 +100,18 @@ export default function Shifts({ me, patient, onBack, onLogout }: ShiftsProps) {
                 {dayShifts.map((shift) => {
                   const block = timeBlocks.find((tb) => tb.id === shift.timeBlockId);
                   return (
-                    <div key={shift.id} className="shift-card">
+                    <button
+                      type="button"
+                      key={shift.id}
+                      className="shift-card"
+                      title={`${block?.name ?? 'Shift'} — view notes`}
+                      onClick={() => onSelectShift(shift)}
+                    >
                       <span className="shift-block">{block?.name ?? 'Shift'}</span>
                       <span className="shift-time">
                         {block ? `${block.startTime} – ${block.endTime}` : ''}
                       </span>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
