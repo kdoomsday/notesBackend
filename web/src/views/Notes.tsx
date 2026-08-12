@@ -9,6 +9,7 @@ import {
   type Shift,
   type TimeBlock,
 } from '../api/client';
+import CategoryIcon from '../components/CategoryIcon';
 
 interface NotesProps {
   me: Me;
@@ -127,7 +128,7 @@ export default function Notes({ me, patient, shift, onBack, onBackToPatients, on
                   <span className="note-date">{formatDateTime(note.noteDate)}</span>
                   {note.category && (
                     <span className="note-category">
-                      {note.category.iconName ? `${note.category.iconName} ` : ''}
+                      <CategoryIcon iconName={note.category.iconName} />
                       {note.category.name}
                     </span>
                   )}

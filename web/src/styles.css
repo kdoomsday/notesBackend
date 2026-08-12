@@ -400,11 +400,18 @@ body {
 }
 
 .note-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: rgba(15, 118, 110, 0.1);
   color: var(--accent);
   border-radius: 999px;
   padding: 2px 10px;
   font-weight: 600;
+}
+
+.note-category svg {
+  display: block;
 }
 
 .note-text {
