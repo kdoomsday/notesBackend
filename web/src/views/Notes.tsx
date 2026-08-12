@@ -46,11 +46,36 @@ export default function Notes({ me, patient, shift, onBack, onBackToPatients, on
   const [error, setError] = useState('');
 
   useEffect(() => {
+    let source: EventSource | null = null;
+    let cancelled = false;
+
     Promise.all([authApi.notes(), authApi.timeBlocks(), authApi.operators()])
       .then(([allNotes, blocks, ops]) => {
+        if (cancelled) return;
         setNotes(allNotes.filter((n) => !n.deleted && n.shiftId === shift.id));
         setTimeBlocks(blocks.filter((b) => !b.deleted));
         setOperators(ops.filter((o) => !o.deleted));
+
+        const since =
+          allNotes.reduce((max, n) => (n.updatedAt > max ? n.updatedAt : max), '') ||
+          new Date(0).toISOString();
+        source = new EventSource(`/api/notes/stream?since=${encodeURIComponent(since)}`);
+        source.addEventListener('note', (event) => {
+          let note: Note;
+          try {
+            note = JSON.parse((event as MessageEvent).data) as Note;
+          } catch {
+            return;
+          }
+          if (note.shiftId !== shift.id) return;
+          setNotes((prev) => {
+            if (!prev) return prev;
+            if (note.deleted) {
+              return prev.filter((n) => n.id !== note.id);
+            }
+            return prev.some((n) => n.id === note.id) ? prev : [...prev, note];
+          });
+        });
       })
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
@@ -59,6 +84,11 @@ export default function Notes({ me, patient, shift, onBack, onBackToPatients, on
         }
         setError(err instanceof Error ? err.message : 'Could not load notes');
       });
+
+    return () => {
+      cancelled = true;
+      source?.close();
+    };
   }, [onLogout, shift.id]);
 
   async function handleLogout() {
