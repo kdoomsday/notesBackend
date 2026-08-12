@@ -9,6 +9,23 @@ export interface Patient {
   deleted: boolean;
 }
 
+export interface Shift {
+  id: string;
+  patientId: string;
+  timeBlockId: number;
+  date: string;
+  updatedAt: number;
+}
+
+export interface TimeBlock {
+  id: number;
+  name: string;
+  startTime: string;
+  endTime: string;
+  updatedAt: string;
+  deleted: boolean;
+}
+
 export class ApiError extends Error {
   status: number;
 
@@ -52,4 +69,6 @@ export const authApi = {
     api<Me>('/api/auth/login', { method: 'POST', body: JSON.stringify({ name, password }) }),
   logout: () => api<unknown>('/api/auth/logout', { method: 'POST' }),
   patients: () => api<Patient[]>('/api/patients'),
+  shifts: () => api<Shift[]>('/api/shifts'),
+  timeBlocks: () => api<TimeBlock[]>('/api/time-blocks'),
 };

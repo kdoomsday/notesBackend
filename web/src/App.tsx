@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
-import { authApi, type Me } from './api/client';
+import { authApi, type Me, type Patient } from './api/client';
 import Login from './views/Login';
 import Patients from './views/Patients';
+import Shifts from './views/Shifts';
 
 export default function App() {
   const [me, setMe] = useState<Me | null>(null);
   const [checking, setChecking] = useState(true);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
-  const handleLogout = useCallback(() => setMe(null), []);
+  const handleLogout = useCallback(() => {
+    setMe(null);
+    setSelectedPatient(null);
+  }, []);
 
   useEffect(() => {
     authApi
@@ -21,5 +26,16 @@ export default function App() {
 
   if (!me) return <Login onLogin={setMe} />;
 
-  return <Patients me={me} onLogout={handleLogout} />;
+  if (selectedPatient) {
+    return (
+      <Shifts
+        me={me}
+        patient={selectedPatient}
+        onBack={() => setSelectedPatient(null)}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
+  return <Patients me={me} onLogout={handleLogout} onSelectPatient={setSelectedPatient} />;
 }

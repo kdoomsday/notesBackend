@@ -4,6 +4,7 @@ import { ApiError, authApi, type Me, type Patient } from '../api/client';
 interface PatientsProps {
   me: Me;
   onLogout: () => void;
+  onSelectPatient: (patient: Patient) => void;
 }
 
 function initials(name: string): string {
@@ -21,7 +22,7 @@ function formatDate(value: string): string {
   return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function Patients({ me, onLogout }: PatientsProps) {
+export default function Patients({ me, onLogout, onSelectPatient }: PatientsProps) {
   const [patients, setPatients] = useState<Patient[] | null>(null);
   const [error, setError] = useState('');
 
@@ -80,7 +81,13 @@ export default function Patients({ me, onLogout }: PatientsProps) {
         {error && <div className="error app-error">{error}</div>}
         <div className="patients-grid">
           {visible.map((patient) => (
-            <button type="button" key={patient.id} className="patient-card" title={patient.name}>
+            <button
+              type="button"
+              key={patient.id}
+              className="patient-card"
+              title={`${patient.name} — view shifts`}
+              onClick={() => onSelectPatient(patient)}
+            >
               <span className="avatar">{initials(patient.name) || '?'}</span>
               <span className="patient-info">
                 <span className="patient-name">{patient.name}</span>
