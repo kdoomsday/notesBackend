@@ -16,6 +16,26 @@ function formatDate(value: string): string {
   return date.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function toMinutes(value: string): number {
+  const [hours, minutes] = value.split(':').map(Number);
+  return (hours || 0) * 60 + (minutes || 0);
+}
+
+function isTimeInBlock(nowMinutes: number, start: string, end: string): boolean {
+  const startMinutes = toMinutes(start);
+  const endMinutes = toMinutes(end);
+  if (startMinutes === endMinutes) return true;
+  if (startMinutes < endMinutes) return nowMinutes >= startMinutes && nowMinutes < endMinutes;
+  return nowMinutes >= startMinutes || nowMinutes < endMinutes;
+}
+
+function todayString(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
 export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }: ShiftsProps) {
   const [shifts, setShifts] = useState<Shift[] | null>(null);
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
@@ -65,10 +85,14 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
     };
   }, [onLogout]);
 
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentBlockId = timeBlocks.find((tb) => isTimeInBlock(nowMinutes, tb.startTime, tb.endTime))?.id;
+
   const patientShifts = (shifts ?? [])
     .filter((s) => s.patientId === patient.id)
     .sort((a, b) => {
-      const byDate = a.date.localeCompare(b.date);
+      const byDate = b.date.localeCompare(a.date);
       if (byDate !== 0) return byDate;
       const aStart = timeBlocks.find((tb) => tb.id === a.timeBlockId)?.startTime ?? '';
       const bStart = timeBlocks.find((tb) => tb.id === b.timeBlockId)?.startTime ?? '';
@@ -130,11 +154,12 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
               <div className="shift-grid">
                 {dayShifts.map((shift) => {
                   const block = timeBlocks.find((tb) => tb.id === shift.timeBlockId);
+                  const isCurrent = shift.date === todayString() && shift.timeBlockId === currentBlockId;
                   return (
                     <button
                       type="button"
                       key={shift.id}
-                      className="shift-card"
+                      className={`shift-card${isCurrent ? ' shift-card-current' : ''}`}
                       title={`${block?.name ?? 'Shift'} — view notes`}
                       onClick={() => onSelectShift(shift, patientShifts)}
                     >
@@ -142,6 +167,7 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
                       <span className="shift-time">
                         {block ? `${block.startTime} – ${block.endTime}` : ''}
                       </span>
+                      {isCurrent && <span className="shift-current-tag">Current</span>}
                     </button>
                   );
                 })}
