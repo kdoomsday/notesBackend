@@ -16,8 +16,10 @@ interface NotesProps {
   me: Me;
   patient: Patient;
   shift: Shift;
+  shifts: Shift[];
   onBack: () => void;
   onBackToPatients: () => void;
+  onNavigateShift: (shift: Shift) => void;
   onLogout: () => void;
 }
 
@@ -40,7 +42,44 @@ function formatDate(value: string): string {
   return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function Notes({ me, patient, shift, onBack, onBackToPatients, onLogout }: NotesProps) {
+function Arrow({ direction }: { direction: 'left' | 'right' }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {direction === 'left' ? (
+        <>
+          <path d="M15 10H5" />
+          <path d="M9 5l-5 5 5 5" />
+        </>
+      ) : (
+        <>
+          <path d="M5 10h10" />
+          <path d="M11 5l5 5-5 5" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+export default function Notes({
+  me,
+  patient,
+  shift,
+  shifts,
+  onBack,
+  onBackToPatients,
+  onNavigateShift,
+  onLogout,
+}: NotesProps) {
   const [notes, setNotes] = useState<Note[] | null>(null);
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
@@ -108,6 +147,10 @@ export default function Notes({ me, patient, shift, onBack, onBackToPatients, on
   const block = timeBlocks.find((tb) => tb.id === shift.timeBlockId);
   const shiftLabel = block ? `${block.name} · ${formatDate(shift.date)}` : formatDate(shift.date);
 
+  const shiftIndex = shifts.findIndex((s) => s.id === shift.id);
+  const prevShift = shiftIndex > 0 ? shifts[shiftIndex - 1] : undefined;
+  const nextShift = shiftIndex >= 0 && shiftIndex < shifts.length - 1 ? shifts[shiftIndex + 1] : undefined;
+
   function operatorName(id: number): string {
     return operators.find((o) => o.id === id)?.name ?? '';
   }
@@ -146,6 +189,27 @@ export default function Notes({ me, patient, shift, onBack, onBackToPatients, on
                 ? '1 note'
                 : `${shiftNotes.length} notes`}
           </p>
+        </div>
+        <div className="shift-nav">
+          <button
+            type="button"
+            className="btn btn-ghost shift-nav-btn"
+            disabled={!prevShift}
+            onClick={() => prevShift && onNavigateShift(prevShift)}
+          >
+            <Arrow direction="left" />
+            Previous
+          </button>
+          <span className="shift-nav-position">{shiftLabel}</span>
+          <button
+            type="button"
+            className="btn btn-ghost shift-nav-btn"
+            disabled={!nextShift}
+            onClick={() => nextShift && onNavigateShift(nextShift)}
+          >
+            Next
+            <Arrow direction="right" />
+          </button>
         </div>
         {error && <div className="error app-error">{error}</div>}
         {notes === null ? (

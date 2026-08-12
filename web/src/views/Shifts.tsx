@@ -6,7 +6,7 @@ interface ShiftsProps {
   me: Me;
   patient: Patient;
   onBack: () => void;
-  onSelectShift: (shift: Shift) => void;
+  onSelectShift: (shift: Shift, orderedShifts: Shift[]) => void;
   onLogout: () => void;
 }
 
@@ -136,7 +136,7 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
                       key={shift.id}
                       className="shift-card"
                       title={`${block?.name ?? 'Shift'} — view notes`}
-                      onClick={() => onSelectShift(shift)}
+                      onClick={() => onSelectShift(shift, patientShifts)}
                     >
                       <span className="shift-block">{block?.name ?? 'Shift'}</span>
                       <span className="shift-time">
