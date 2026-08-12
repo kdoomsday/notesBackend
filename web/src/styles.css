@@ -223,6 +223,27 @@ body {
   color: var(--text-muted);
 }
 
+/* ---- Back link ---- */
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
 /* ---- Main ---- */
 
 .app-main {

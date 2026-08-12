@@ -25,6 +25,21 @@ export default function App() {
       .finally(() => setChecking(false));
   }, []);
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return;
+      const el = document.activeElement;
+      if (el instanceof HTMLElement && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return;
+      if (selectedShift) {
+        setSelectedShift(null);
+      } else if (selectedPatient) {
+        setSelectedPatient(null);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedPatient, selectedShift]);
+
   if (checking) return null;
 
   if (!me) return <Login onLogin={setMe} />;

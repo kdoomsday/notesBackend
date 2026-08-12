@@ -10,6 +10,7 @@ import {
   type TimeBlock,
 } from '../api/client';
 import CategoryIcon from '../components/CategoryIcon';
+import BackLink from '../components/BackLink';
 
 interface NotesProps {
   me: Me;
@@ -135,6 +136,7 @@ export default function Notes({ me, patient, shift, onBack, onBackToPatients, on
         </div>
       </header>
       <main className="app-main">
+        <BackLink label="Back to Shifts" onClick={onBack} />
         <div className="section-head">
           <h2>Notes</h2>
           <p className="section-subtitle">

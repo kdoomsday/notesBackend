@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ApiError, authApi, type Me, type Patient, type Shift, type TimeBlock } from '../api/client';
+import BackLink from '../components/BackLink';
 
 interface ShiftsProps {
   me: Me;
@@ -110,6 +111,7 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
         </div>
       </header>
       <main className="app-main">
+        <BackLink label="Back to Patients" onClick={onBack} />
         <div className="section-head">
           <h2>Shifts</h2>
           <p className="section-subtitle">
