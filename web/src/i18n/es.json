@@ -27,7 +27,7 @@
     "count_other": "{{count}} pacientes",
     "viewShifts": "{{name}} — ver turnos",
     "updated": "Actualizado {{date}}",
-    "newPatient": "Añadir paciente",
+    "newPatient": "Crear paciente",
     "create": "Crear",
     "name": "Nombre",
     "creating": "Creando…",
