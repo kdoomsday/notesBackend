@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ApiError, authApi, type Me, type Patient } from '../api/client';
+import { serverErrorMessage } from '../i18n';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 interface PatientsProps {
   me: Me;
@@ -16,13 +19,14 @@ function initials(name: string): string {
     .join('');
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string, locale: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 export default function Patients({ me, onLogout, onSelectPatient }: PatientsProps) {
+  const { t, i18n } = useTranslation();
   const [patients, setPatients] = useState<Patient[] | null>(null);
   const [error, setError] = useState('');
 
@@ -35,9 +39,9 @@ export default function Patients({ me, onLogout, onSelectPatient }: PatientsProp
           onLogout();
           return;
         }
-        setError(err instanceof Error ? err.message : 'Could not load patients');
+        setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('patients.title') }));
       });
-  }, [onLogout]);
+  }, [onLogout, t]);
 
   async function handleLogout() {
     try {
@@ -57,25 +61,24 @@ export default function Patients({ me, onLogout, onSelectPatient }: PatientsProp
       <header className="app-header">
         <div className="app-header-inner">
           <div className="breadcrumb">
-            <span className="breadcrumb-current">Patients</span>
+            <span className="breadcrumb-current">{t('nav.patients')}</span>
           </div>
           <div className="user-area">
+            <LanguageSwitcher />
             <span className="user-name">{me.name}</span>
             <button type="button" className="btn btn-ghost" onClick={handleLogout}>
-              Log out
+              {t('nav.logOut')}
             </button>
           </div>
         </div>
       </header>
       <main className="app-main">
         <div className="section-head">
-          <h2>Patients</h2>
+          <h2>{t('patients.title')}</h2>
           <p className="section-subtitle">
             {patients === null
-              ? 'Loading…'
-              : visible.length === 1
-                ? '1 patient'
-                : `${visible.length} patients`}
+              ? t('common.loading')
+              : t('patients.count', { count: visible.length })}
           </p>
         </div>
         {error && <div className="error app-error">{error}</div>}
@@ -85,14 +88,14 @@ export default function Patients({ me, onLogout, onSelectPatient }: PatientsProp
               type="button"
               key={patient.id}
               className="patient-card"
-              title={`${patient.name} — view shifts`}
+              title={t('patients.viewShifts', { name: patient.name })}
               onClick={() => onSelectPatient(patient)}
             >
               <span className="avatar">{initials(patient.name) || '?'}</span>
               <span className="patient-info">
                 <span className="patient-name">{patient.name}</span>
                 <span className="patient-meta">
-                  {patient.updatedAt ? `Updated ${formatDate(patient.updatedAt)}` : ''}
+                  {patient.updatedAt ? t('patients.updated', { date: formatDate(patient.updatedAt, i18n.language) }) : ''}
                 </span>
               </span>
             </button>

@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ApiError, authApi, type Me, type Patient, type Shift, type TimeBlock } from '../api/client';
+import { serverErrorMessage } from '../i18n';
 import BackLink from '../components/BackLink';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 interface ShiftsProps {
   me: Me;
@@ -10,10 +13,10 @@ interface ShiftsProps {
   onLogout: () => void;
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string, locale: string): string {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString(locale, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function toMinutes(value: string): number {
@@ -37,6 +40,7 @@ function todayString(): string {
 }
 
 export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }: ShiftsProps) {
+  const { t, i18n } = useTranslation();
   const [shifts, setShifts] = useState<Shift[] | null>(null);
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
   const [error, setError] = useState('');
@@ -76,14 +80,14 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
           onLogout();
           return;
         }
-        setError(err instanceof Error ? err.message : 'Could not load shifts');
+        setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('shifts.title') }));
       });
 
     return () => {
       cancelled = true;
       source?.close();
     };
-  }, [onLogout]);
+  }, [onLogout, t]);
 
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
@@ -121,36 +125,35 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
         <div className="app-header-inner">
           <div className="breadcrumb">
             <button type="button" className="crumb-link" onClick={onBack}>
-              Patients
+              {t('nav.patients')}
             </button>
             <span className="breadcrumb-sep">/</span>
             <span className="breadcrumb-current">{patient.name}</span>
           </div>
           <div className="user-area">
+            <LanguageSwitcher />
             <span className="user-name">{me.name}</span>
             <button type="button" className="btn btn-ghost" onClick={handleLogout}>
-              Log out
+              {t('nav.logOut')}
             </button>
           </div>
         </div>
       </header>
       <main className="app-main">
-        <BackLink label="Back to Patients" onClick={onBack} />
+        <BackLink label={t('shifts.backToPatients')} onClick={onBack} />
         <div className="section-head">
-          <h2>Shifts</h2>
-          <p className="section-subtitle">
-            {patientShifts.length === 1 ? '1 shift' : `${patientShifts.length} shifts`}
-          </p>
+          <h2>{t('shifts.title')}</h2>
+          <p className="section-subtitle">{t('shifts.count', { count: patientShifts.length })}</p>
         </div>
         {error && <div className="error app-error">{error}</div>}
         {shifts === null ? (
-          <p className="section-subtitle">Loading…</p>
+          <p className="section-subtitle">{t('common.loading')}</p>
         ) : patientShifts.length === 0 ? (
-          <p className="empty-state">No shifts for this patient yet.</p>
+          <p className="empty-state">{t('shifts.empty')}</p>
         ) : (
           Array.from(byDate.entries()).map(([date, dayShifts]) => (
             <section key={date} className="shift-date">
-              <h3 className="shift-date-title">{formatDate(date)}</h3>
+              <h3 className="shift-date-title">{formatDate(date, i18n.language)}</h3>
               <div className="shift-grid">
                 {dayShifts.map((shift) => {
                   const block = timeBlocks.find((tb) => tb.id === shift.timeBlockId);
@@ -160,14 +163,14 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
                       type="button"
                       key={shift.id}
                       className={`shift-card${isCurrent ? ' shift-card-current' : ''}`}
-                      title={`${block?.name ?? 'Shift'} — view notes`}
+                      title={t('shifts.viewNotes', { block: block?.name ?? t('common.shift') })}
                       onClick={() => onSelectShift(shift, patientShifts)}
                     >
-                      <span className="shift-block">{block?.name ?? 'Shift'}</span>
+                      <span className="shift-block">{block?.name ?? t('common.shift')}</span>
                       <span className="shift-time">
                         {block ? `${block.startTime} – ${block.endTime}` : ''}
                       </span>
-                      {isCurrent && <span className="shift-current-tag">Current</span>}
+                      {isCurrent && <span className="shift-current-tag">{t('shifts.current')}</span>}
                     </button>
                   );
                 })}

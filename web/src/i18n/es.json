@@ -1,0 +1,55 @@
+{
+  "app": {
+    "title": "Notas"
+  },
+  "common": {
+    "shift": "Turno",
+    "loading": "Cargando…",
+    "language": "Idioma"
+  },
+  "nav": {
+    "patients": "Pacientes",
+    "logOut": "Cerrar sesión"
+  },
+  "login": {
+    "title": "Notas",
+    "subtitle": "Inicia sesión con tu nombre y contraseña",
+    "name": "Nombre",
+    "namePlaceholder": "p. ej. admin",
+    "password": "Contraseña",
+    "signingIn": "Iniciando sesión…",
+    "signIn": "Iniciar sesión"
+  },
+  "patients": {
+    "title": "Pacientes",
+    "count_one": "{{count}} paciente",
+    "count_other": "{{count}} pacientes",
+    "viewShifts": "{{name}} — ver turnos",
+    "updated": "Actualizado {{date}}"
+  },
+  "shifts": {
+    "title": "Turnos",
+    "backToPatients": "Volver a pacientes",
+    "count_one": "{{count}} turno",
+    "count_other": "{{count}} turnos",
+    "empty": "Todavía no hay turnos para este paciente.",
+    "viewNotes": "{{block}} — ver notas",
+    "current": "Actual"
+  },
+  "notes": {
+    "title": "Notas",
+    "backToShifts": "Volver a turnos",
+    "count_one": "{{count}} nota",
+    "count_other": "{{count}} notas",
+    "empty": "Todavía no hay notas para este turno.",
+    "previous": "Anterior",
+    "next": "Siguiente"
+  },
+  "errors": {
+    "signInFailed": "No se pudo iniciar sesión",
+    "invalidCredentials": "Nombre o contraseña inválidos",
+    "missingCredentials": "El nombre y la contraseña son obligatorios",
+    "serverUnreachable": "No se pudo conectar con el servidor de notas",
+    "couldNotLoad": "No se pudo cargar {{resource}}"
+  }
+}

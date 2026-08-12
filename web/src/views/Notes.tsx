@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ApiError,
   authApi,
@@ -9,8 +10,10 @@ import {
   type Shift,
   type TimeBlock,
 } from '../api/client';
+import { serverErrorMessage } from '../i18n';
 import CategoryIcon from '../components/CategoryIcon';
 import BackLink from '../components/BackLink';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 interface NotesProps {
   me: Me;
@@ -23,10 +26,10 @@ interface NotesProps {
   onLogout: () => void;
 }
 
-function formatDateTime(value: string): string {
+function formatDateTime(value: string, locale: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString(undefined, {
+  return date.toLocaleString(locale, {
     weekday: 'short',
     day: '2-digit',
     month: 'short',
@@ -36,10 +39,10 @@ function formatDateTime(value: string): string {
   });
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string, locale: string): string {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function Arrow({ direction }: { direction: 'left' | 'right' }) {
@@ -80,6 +83,7 @@ export default function Notes({
   onNavigateShift,
   onLogout,
 }: NotesProps) {
+  const { t, i18n } = useTranslation();
   const [notes, setNotes] = useState<Note[] | null>(null);
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
@@ -122,14 +126,14 @@ export default function Notes({
           onLogout();
           return;
         }
-        setError(err instanceof Error ? err.message : 'Could not load notes');
+        setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('notes.title') }));
       });
 
     return () => {
       cancelled = true;
       source?.close();
     };
-  }, [onLogout, shift.id]);
+  }, [onLogout, shift.id, t]);
 
   async function handleLogout() {
     try {
@@ -145,7 +149,7 @@ export default function Notes({
     .sort((a, b) => a.noteDate.localeCompare(b.noteDate));
 
   const block = timeBlocks.find((tb) => tb.id === shift.timeBlockId);
-  const shiftLabel = block ? `${block.name} · ${formatDate(shift.date)}` : formatDate(shift.date);
+  const shiftLabel = block ? `${block.name} · ${formatDate(shift.date, i18n.language)}` : formatDate(shift.date, i18n.language);
 
   const shiftIndex = shifts.findIndex((s) => s.id === shift.id);
   const prevShift = shiftIndex > 0 ? shifts[shiftIndex - 1] : undefined;
@@ -161,7 +165,7 @@ export default function Notes({
         <div className="app-header-inner">
           <div className="breadcrumb">
             <button type="button" className="crumb-link" onClick={onBackToPatients}>
-              Patients
+              {t('nav.patients')}
             </button>
             <span className="breadcrumb-sep">/</span>
             <button type="button" className="crumb-link" onClick={onBack}>
@@ -171,23 +175,20 @@ export default function Notes({
             <span className="breadcrumb-current">{shiftLabel}</span>
           </div>
           <div className="user-area">
+            <LanguageSwitcher />
             <span className="user-name">{me.name}</span>
             <button type="button" className="btn btn-ghost" onClick={handleLogout}>
-              Log out
+              {t('nav.logOut')}
             </button>
           </div>
         </div>
       </header>
       <main className="app-main">
-        <BackLink label="Back to Shifts" onClick={onBack} />
+        <BackLink label={t('notes.backToShifts')} onClick={onBack} />
         <div className="section-head">
-          <h2>Notes</h2>
+          <h2>{t('notes.title')}</h2>
           <p className="section-subtitle">
-            {notes === null
-              ? 'Loading…'
-              : shiftNotes.length === 1
-                ? '1 note'
-                : `${shiftNotes.length} notes`}
+            {notes === null ? t('common.loading') : t('notes.count', { count: shiftNotes.length })}
           </p>
         </div>
         <div className="shift-nav">
@@ -198,7 +199,7 @@ export default function Notes({
             onClick={() => prevShift && onNavigateShift(prevShift)}
           >
             <Arrow direction="left" />
-            Previous
+            {t('notes.previous')}
           </button>
           <span className="shift-nav-position">{shiftLabel}</span>
           <button
@@ -207,21 +208,21 @@ export default function Notes({
             disabled={!nextShift}
             onClick={() => nextShift && onNavigateShift(nextShift)}
           >
-            Next
+            {t('notes.next')}
             <Arrow direction="right" />
           </button>
         </div>
         {error && <div className="error app-error">{error}</div>}
         {notes === null ? (
-          <p className="section-subtitle">Loading…</p>
+          <p className="section-subtitle">{t('common.loading')}</p>
         ) : shiftNotes.length === 0 ? (
-          <p className="empty-state">No notes for this shift yet.</p>
+          <p className="empty-state">{t('notes.empty')}</p>
         ) : (
           <div className="notes-list">
             {shiftNotes.map((note) => (
               <div key={note.id} className="note-card">
                 <div className="note-meta">
-                  <span className="note-date">{formatDateTime(note.noteDate)}</span>
+                  <span className="note-date">{formatDateTime(note.noteDate, i18n.language)}</span>
                   {note.category && (
                     <span className="note-category">
                       <CategoryIcon iconName={note.category.iconName} />

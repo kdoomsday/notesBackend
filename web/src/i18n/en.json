@@ -1,0 +1,55 @@
+{
+  "app": {
+    "title": "Notes"
+  },
+  "common": {
+    "shift": "Shift",
+    "loading": "Loading…",
+    "language": "Language"
+  },
+  "nav": {
+    "patients": "Patients",
+    "logOut": "Log out"
+  },
+  "login": {
+    "title": "Notes",
+    "subtitle": "Sign in with your name and password",
+    "name": "Name",
+    "namePlaceholder": "e.g. admin",
+    "password": "Password",
+    "signingIn": "Signing in…",
+    "signIn": "Sign in"
+  },
+  "patients": {
+    "title": "Patients",
+    "count_one": "{{count}} patient",
+    "count_other": "{{count}} patients",
+    "viewShifts": "{{name}} — view shifts",
+    "updated": "Updated {{date}}"
+  },
+  "shifts": {
+    "title": "Shifts",
+    "backToPatients": "Back to Patients",
+    "count_one": "{{count}} shift",
+    "count_other": "{{count}} shifts",
+    "empty": "No shifts for this patient yet.",
+    "viewNotes": "{{block}} — view notes",
+    "current": "Current"
+  },
+  "notes": {
+    "title": "Notes",
+    "backToShifts": "Back to Shifts",
+    "count_one": "{{count}} note",
+    "count_other": "{{count}} notes",
+    "empty": "No notes for this shift yet.",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "errors": {
+    "signInFailed": "Sign in failed",
+    "invalidCredentials": "Invalid name or password",
+    "missingCredentials": "Name and password are required",
+    "serverUnreachable": "Could not reach the notes server",
+    "couldNotLoad": "Could not load {{resource}}"
+  }
+}
