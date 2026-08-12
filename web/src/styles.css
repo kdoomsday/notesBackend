@@ -223,6 +223,27 @@ body {
   color: var(--text-muted);
 }
 
+/* ---- Back link ---- */
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 16px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
 /* ---- Main ---- */
 
 .app-main {
@@ -357,6 +378,29 @@ body {
   color: var(--text-muted);
 }
 
+.shift-card-current {
+  border-color: var(--accent);
+  background: rgba(15, 118, 110, 0.06);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+
+.shift-card-current .shift-block {
+  color: var(--accent-dark);
+}
+
+.shift-current-tag {
+  margin-top: 4px;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
 .empty-state {
   margin-top: 24px;
   color: var(--text-muted);
@@ -368,6 +412,24 @@ body {
 }
 
 /* ---- Notes ---- */
+
+.shift-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.shift-nav .shift-nav-btn {
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.shift-nav-position {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
 
 .notes-list {
   display: flex;

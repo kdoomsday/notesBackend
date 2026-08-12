@@ -10,11 +10,13 @@ export default function App() {
   const [checking, setChecking] = useState(true);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
+  const [selectedShiftList, setSelectedShiftList] = useState<Shift[]>([]);
 
   const handleLogout = useCallback(() => {
     setMe(null);
     setSelectedPatient(null);
     setSelectedShift(null);
+    setSelectedShiftList([]);
   }, []);
 
   useEffect(() => {
@@ -24,6 +26,21 @@ export default function App() {
       .catch(() => setMe(null))
       .finally(() => setChecking(false));
   }, []);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return;
+      const el = document.activeElement;
+      if (el instanceof HTMLElement && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return;
+      if (selectedShift) {
+        setSelectedShift(null);
+      } else if (selectedPatient) {
+        setSelectedPatient(null);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedPatient, selectedShift]);
 
   if (checking) return null;
 
@@ -35,11 +52,17 @@ export default function App() {
         me={me}
         patient={selectedPatient}
         shift={selectedShift}
-        onBack={() => setSelectedShift(null)}
+        shifts={selectedShiftList}
+        onBack={() => {
+          setSelectedShift(null);
+          setSelectedShiftList([]);
+        }}
         onBackToPatients={() => {
           setSelectedShift(null);
+          setSelectedShiftList([]);
           setSelectedPatient(null);
         }}
+        onNavigateShift={setSelectedShift}
         onLogout={handleLogout}
       />
     );
@@ -51,7 +74,10 @@ export default function App() {
         me={me}
         patient={selectedPatient}
         onBack={() => setSelectedPatient(null)}
-        onSelectShift={setSelectedShift}
+        onSelectShift={(shift, orderedShifts) => {
+          setSelectedShift(shift);
+          setSelectedShiftList(orderedShifts);
+        }}
         onLogout={handleLogout}
       />
     );

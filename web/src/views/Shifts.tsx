@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { ApiError, authApi, type Me, type Patient, type Shift, type TimeBlock } from '../api/client';
+import BackLink from '../components/BackLink';
 
 interface ShiftsProps {
   me: Me;
   patient: Patient;
   onBack: () => void;
-  onSelectShift: (shift: Shift) => void;
+  onSelectShift: (shift: Shift, orderedShifts: Shift[]) => void;
   onLogout: () => void;
 }
 
@@ -13,6 +14,26 @@ function formatDate(value: string): string {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function toMinutes(value: string): number {
+  const [hours, minutes] = value.split(':').map(Number);
+  return (hours || 0) * 60 + (minutes || 0);
+}
+
+function isTimeInBlock(nowMinutes: number, start: string, end: string): boolean {
+  const startMinutes = toMinutes(start);
+  const endMinutes = toMinutes(end);
+  if (startMinutes === endMinutes) return true;
+  if (startMinutes < endMinutes) return nowMinutes >= startMinutes && nowMinutes < endMinutes;
+  return nowMinutes >= startMinutes || nowMinutes < endMinutes;
+}
+
+function todayString(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
 }
 
 export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }: ShiftsProps) {
@@ -64,10 +85,14 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
     };
   }, [onLogout]);
 
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentBlockId = timeBlocks.find((tb) => isTimeInBlock(nowMinutes, tb.startTime, tb.endTime))?.id;
+
   const patientShifts = (shifts ?? [])
     .filter((s) => s.patientId === patient.id)
     .sort((a, b) => {
-      const byDate = a.date.localeCompare(b.date);
+      const byDate = b.date.localeCompare(a.date);
       if (byDate !== 0) return byDate;
       const aStart = timeBlocks.find((tb) => tb.id === a.timeBlockId)?.startTime ?? '';
       const bStart = timeBlocks.find((tb) => tb.id === b.timeBlockId)?.startTime ?? '';
@@ -110,6 +135,7 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
         </div>
       </header>
       <main className="app-main">
+        <BackLink label="Back to Patients" onClick={onBack} />
         <div className="section-head">
           <h2>Shifts</h2>
           <p className="section-subtitle">
@@ -128,18 +154,20 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
               <div className="shift-grid">
                 {dayShifts.map((shift) => {
                   const block = timeBlocks.find((tb) => tb.id === shift.timeBlockId);
+                  const isCurrent = shift.date === todayString() && shift.timeBlockId === currentBlockId;
                   return (
                     <button
                       type="button"
                       key={shift.id}
-                      className="shift-card"
+                      className={`shift-card${isCurrent ? ' shift-card-current' : ''}`}
                       title={`${block?.name ?? 'Shift'} — view notes`}
-                      onClick={() => onSelectShift(shift)}
+                      onClick={() => onSelectShift(shift, patientShifts)}
                     >
                       <span className="shift-block">{block?.name ?? 'Shift'}</span>
                       <span className="shift-time">
                         {block ? `${block.startTime} – ${block.endTime}` : ''}
                       </span>
+                      {isCurrent && <span className="shift-current-tag">Current</span>}
                     </button>
                   );
                 })}
