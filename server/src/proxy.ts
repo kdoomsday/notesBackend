@@ -37,6 +37,14 @@ export function proxyToNotes(
     headers.Authorization = `Bearer ${session.session.token}`;
   }
 
+  let body: Buffer | null = null;
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    if (request.body !== undefined && request.body !== null) {
+      body = Buffer.from(typeof request.body === 'string' ? request.body : JSON.stringify(request.body));
+      headers['content-length'] = String(body.length);
+    }
+  }
+
   const proxyReq = http.request(target, { method: request.method, headers }, (proxyRes) => {
     const responseHeaders: Record<string, string | string[]> = {};
     for (const [key, value] of Object.entries(proxyRes.headers)) {
@@ -62,5 +70,10 @@ export function proxyToNotes(
     }
   });
 
-  request.raw.pipe(proxyReq);
+  if (body) {
+    proxyReq.write(body);
+    proxyReq.end();
+  } else {
+    request.raw.pipe(proxyReq);
+  }
 }

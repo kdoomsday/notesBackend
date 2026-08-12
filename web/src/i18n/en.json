@@ -5,7 +5,8 @@
   "common": {
     "shift": "Shift",
     "loading": "Loading…",
-    "language": "Language"
+    "language": "Language",
+    "cancel": "Cancel"
   },
   "nav": {
     "patients": "Patients",
@@ -25,7 +26,14 @@
     "count_one": "{{count}} patient",
     "count_other": "{{count}} patients",
     "viewShifts": "{{name}} — view shifts",
-    "updated": "Updated {{date}}"
+    "updated": "Updated {{date}}",
+    "newPatient": "Add patient",
+    "create": "Create",
+    "name": "Name",
+    "creating": "Creating…",
+    "namePlaceholder": "Patient name",
+    "createFailed": "Could not create patient",
+    "alreadyExists": "A patient with this name already exists."
   },
   "shifts": {
     "title": "Shifts",

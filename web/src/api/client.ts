@@ -92,6 +92,8 @@ export const authApi = {
     api<Me>('/api/auth/login', { method: 'POST', body: JSON.stringify({ name, password }) }),
   logout: () => api<unknown>('/api/auth/logout', { method: 'POST' }),
   patients: () => api<Patient[]>('/api/patients'),
+  createPatient: (name: string) =>
+    api<Patient>('/api/patients', { method: 'POST', body: JSON.stringify({ name }) }),
   shifts: () => api<Shift[]>('/api/shifts'),
   timeBlocks: () => api<TimeBlock[]>('/api/time-blocks'),
   notes: () => api<Note[]>('/api/notes'),

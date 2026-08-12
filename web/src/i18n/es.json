@@ -5,7 +5,8 @@
   "common": {
     "shift": "Turno",
     "loading": "Cargando…",
-    "language": "Idioma"
+    "language": "Idioma",
+    "cancel": "Cancelar"
   },
   "nav": {
     "patients": "Pacientes",
@@ -25,7 +26,14 @@
     "count_one": "{{count}} paciente",
     "count_other": "{{count}} pacientes",
     "viewShifts": "{{name}} — ver turnos",
-    "updated": "Actualizado {{date}}"
+    "updated": "Actualizado {{date}}",
+    "newPatient": "Añadir paciente",
+    "create": "Crear",
+    "name": "Nombre",
+    "creating": "Creando…",
+    "namePlaceholder": "Nombre del paciente",
+    "createFailed": "No se pudo crear el paciente",
+    "alreadyExists": "Ya existe un paciente con ese nombre."
   },
   "shifts": {
     "title": "Turnos",
