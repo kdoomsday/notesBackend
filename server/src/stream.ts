@@ -5,42 +5,58 @@ import { requestNotes } from './notesClient.js';
 const POLL_INTERVAL_MS = 3000;
 const HEARTBEAT_INTERVAL_MS = 15000;
 
-interface NoteEvent {
+interface StreamItem {
   id: string;
-  updatedAt: string;
-  deleted?: boolean;
+  updatedAt: unknown;
   [key: string]: unknown;
 }
 
-async function fetchNotesSince(token: string, since: string): Promise<{ notes: NoteEvent[]; unauthorized: boolean }> {
-  const res = await requestNotes(`/api/notes/new/${encodeURIComponent(since)}`, {
+interface StreamOptions {
+  route: string;
+  eventName: string;
+  buildUrl: (since: string) => string;
+  itemSince: (item: StreamItem) => string;
+  initialSince: (raw: string | undefined) => string;
+}
+
+async function fetchItems(
+  token: string,
+  since: string,
+  options: StreamOptions
+): Promise<{ items: StreamItem[]; unauthorized: boolean }> {
+  const res = await requestNotes(options.buildUrl(since), {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (res.status === 401) {
-    return { notes: [], unauthorized: true };
+    return { items: [], unauthorized: true };
   }
   if (res.status !== 200) {
-    return { notes: [], unauthorized: false };
+    return { items: [], unauthorized: false };
   }
   try {
     const parsed: unknown = JSON.parse(res.body);
-    return { notes: Array.isArray(parsed) ? (parsed as NoteEvent[]) : [], unauthorized: false };
+    return { items: Array.isArray(parsed) ? (parsed as StreamItem[]) : [], unauthorized: false };
   } catch {
-    return { notes: [], unauthorized: false };
+    return { items: [], unauthorized: false };
   }
 }
 
-export async function registerNotesStream(app: FastifyInstance): Promise<void> {
-  app.get('/api/notes/stream', async (request, reply) => {
+export function registerStream(app: FastifyInstance, options: StreamOptions): void {
+  app.get(options.route, async (request, reply) => {
     const session = getSession(request.cookies.session);
     if (!session) {
       return reply.code(401).send({ error: 'Not authenticated' });
     }
-    handleStream(request, reply, session);
+    handleStream(request, reply, session, options);
   });
 }
 
-function handleStream(request: FastifyRequest, reply: FastifyReply, session: SessionRecord): void {
+function handleStream(
+  request: FastifyRequest,
+  reply: FastifyReply,
+  session: SessionRecord,
+  options: StreamOptions
+): void {
   reply.hijack();
 
   const raw = reply.raw;
@@ -51,8 +67,7 @@ function handleStream(request: FastifyRequest, reply: FastifyReply, session: Ses
     'X-Accel-Buffering': 'no',
   });
 
-  const sinceRaw = (request.query as { since?: string }).since;
-  let since = sinceRaw && !Number.isNaN(Date.parse(sinceRaw)) ? sinceRaw : new Date(0).toISOString();
+  let since = options.initialSince((request.query as { since?: string }).since);
 
   let closed = false;
   let pollTimer: NodeJS.Timeout | undefined;
@@ -70,7 +85,7 @@ function handleStream(request: FastifyRequest, reply: FastifyReply, session: Ses
 
   const poll = async () => {
     if (closed) return;
-    const { notes, unauthorized } = await fetchNotesSince(session.session.token, since);
+    const { items, unauthorized } = await fetchItems(session.session.token, since, options);
     if (unauthorized) {
       deleteSession(session.sessionToken);
       close();
@@ -79,12 +94,13 @@ function handleStream(request: FastifyRequest, reply: FastifyReply, session: Ses
     if (closed) return;
 
     let maxSince = since;
-    for (const note of notes) {
-      if (typeof note.updatedAt === 'string' && note.updatedAt > maxSince) {
-        maxSince = note.updatedAt;
+    for (const item of items) {
+      const itemSince = options.itemSince(item);
+      if (itemSince > maxSince) {
+        maxSince = itemSince;
       }
       if (closed) return;
-      raw.write(`event: note\ndata: ${JSON.stringify(note)}\n\n`);
+      raw.write(`event: ${options.eventName}\ndata: ${JSON.stringify(item)}\n\n`);
     }
     since = maxSince;
   };
@@ -99,4 +115,24 @@ function handleStream(request: FastifyRequest, reply: FastifyReply, session: Ses
   }, HEARTBEAT_INTERVAL_MS);
 
   void poll();
+}
+
+export function registerNotesStream(app: FastifyInstance): void {
+  registerStream(app, {
+    route: '/api/notes/stream',
+    eventName: 'note',
+    buildUrl: (since) => `/api/notes/new/${encodeURIComponent(since)}`,
+    itemSince: (item) => (typeof item.updatedAt === 'string' ? item.updatedAt : ''),
+    initialSince: (raw) => (raw && !Number.isNaN(Date.parse(raw)) ? raw : new Date(0).toISOString()),
+  });
+}
+
+export function registerShiftsStream(app: FastifyInstance): void {
+  registerStream(app, {
+    route: '/api/shifts/stream',
+    eventName: 'shift',
+    buildUrl: (since) => `/api/shifts/new/${since}`,
+    itemSince: (item) => (typeof item.updatedAt === 'number' ? String(item.updatedAt) : ''),
+    initialSince: (raw) => (raw && /^\d+$/.test(raw) ? raw : '0'),
+  });
 }

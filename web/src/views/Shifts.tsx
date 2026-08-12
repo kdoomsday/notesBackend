@@ -21,10 +21,34 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
   const [error, setError] = useState('');
 
   useEffect(() => {
+    let source: EventSource | null = null;
+    let cancelled = false;
+
     Promise.all([authApi.shifts(), authApi.timeBlocks()])
       .then(([allShifts, blocks]) => {
+        if (cancelled) return;
         setShifts(allShifts);
         setTimeBlocks(blocks.filter((b) => !b.deleted));
+
+        const since = allShifts.reduce((max, s) => Math.max(max, s.updatedAt), 0);
+        source = new EventSource(`/api/shifts/stream?since=${since}`);
+        source.addEventListener('shift', (event) => {
+          let shift: Shift;
+          try {
+            shift = JSON.parse((event as MessageEvent).data) as Shift;
+          } catch {
+            return;
+          }
+          setShifts((prev) => {
+            if (!prev) return prev;
+            const index = prev.findIndex((s) => s.id === shift.id);
+            if (index === -1) return [...prev, shift];
+            if (prev[index].updatedAt >= shift.updatedAt) return prev;
+            const next = prev.slice();
+            next[index] = shift;
+            return next;
+          });
+        });
       })
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
@@ -33,6 +57,11 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
         }
         setError(err instanceof Error ? err.message : 'Could not load shifts');
       });
+
+    return () => {
+      cancelled = true;
+      source?.close();
+    };
   }, [onLogout]);
 
   const patientShifts = (shifts ?? [])
