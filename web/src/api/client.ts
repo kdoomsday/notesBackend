@@ -43,6 +43,18 @@ export interface Note {
   photoCount?: number;
 }
 
+export interface NotePhoto {
+  id: string;
+  noteId: string;
+  filePath: string;
+  origName: string;
+  mimeType: string;
+  fileSize: number;
+  sortOrder: number;
+  deleted: boolean;
+  createdAt: string;
+}
+
 export interface Operator {
   id: number;
   name: string;
@@ -88,6 +100,10 @@ export async function api<T>(url: string, options: RequestInit = {}): Promise<T>
   return body as T;
 }
 
+export function notePhotoUrl(noteId: string, photoId: string): string {
+  return `/api/notes/${noteId}/photos/${photoId}`;
+}
+
 export const authApi = {
     me: () => api<Me>('/api/auth/me'),
     login: (name: string, password: string) =>
@@ -100,5 +116,6 @@ export const authApi = {
     shifts: () => api<Shift[]>('/api/shifts'),
     timeBlocks: () => api<TimeBlock[]>('/api/time-blocks'),
     notes: () => api<Note[]>('/api/notes'),
+    notePhotos: (noteId: string) => api<NotePhoto[]>(`/api/notes/${noteId}/photos`),
     operators: () => api<Operator[]>('/api/operators'),
 };

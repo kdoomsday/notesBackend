@@ -6,7 +6,8 @@
     "shift": "Turno",
     "loading": "Cargando…",
     "language": "Idioma",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "close": "Cerrar"
   },
   "nav": {
     "patients": "Pacientes",
@@ -57,7 +58,16 @@
     "count_other": "{{count}} notas",
     "empty": "Todavía no hay notas para este turno.",
     "previous": "Anterior",
-    "next": "Siguiente"
+    "next": "Siguiente",
+    "details": "Detalles de la nota",
+    "author": "Autor",
+    "unknownAuthor": "Desconocido",
+    "updated": "Actualizado",
+    "photos": "Fotos",
+    "noPhotos": "Sin fotos",
+    "showPhoto": "Ver foto {{name}}",
+    "photoCount_one": "{{count}} foto",
+    "photoCount_other": "{{count}} fotos"
   },
   "errors": {
     "signInFailed": "No se pudo iniciar sesión",

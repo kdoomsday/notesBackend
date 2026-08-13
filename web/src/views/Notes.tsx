@@ -11,7 +11,7 @@ import {
   type TimeBlock,
 } from '../api/client';
 import { serverErrorMessage } from '../i18n';
-import CategoryIcon from '../components/CategoryIcon';
+import NoteCard from '../components/NoteCard';
 import BackLink from '../components/BackLink';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -24,19 +24,6 @@ interface NotesProps {
   onBackToPatients: () => void;
   onNavigateShift: (shift: Shift) => void;
   onLogout: () => void;
-}
-
-function formatDateTime(value: string, locale: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString(locale, {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 function formatDate(value: string, locale: string): string {
@@ -220,19 +207,12 @@ export default function Notes({
         ) : (
           <div className="notes-list">
             {shiftNotes.map((note) => (
-              <div key={note.id} className="note-card">
-                <div className="note-meta">
-                  <span className="note-date">{formatDateTime(note.noteDate, i18n.language)}</span>
-                  {note.category && (
-                    <span className="note-category">
-                      <CategoryIcon iconName={note.category.iconName} />
-                      {note.category.name}
-                    </span>
-                  )}
-                  <span className="note-author">{operatorName(note.createdBy)}</span>
-                </div>
-                <p className="note-text">{note.text}</p>
-              </div>
+              <NoteCard
+                key={note.id}
+                note={note}
+                authorName={operatorName(note.createdBy)}
+                onLogout={onLogout}
+              />
             ))}
           </div>
         )}
