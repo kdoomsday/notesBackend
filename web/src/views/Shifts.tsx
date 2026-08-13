@@ -9,6 +9,7 @@ interface ShiftsProps {
   me: Me;
   patient: Patient;
   onBack: () => void;
+  onPatientDeleted: () => void;
   onSelectShift: (shift: Shift, orderedShifts: Shift[]) => void;
   onLogout: () => void;
 }
@@ -39,11 +40,23 @@ function todayString(): string {
   return `${now.getFullYear()}-${month}-${day}`;
 }
 
-export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }: ShiftsProps) {
+export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelectShift, onLogout }: ShiftsProps) {
   const { t, i18n } = useTranslation();
   const [shifts, setShifts] = useState<Shift[] | null>(null);
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
   const [error, setError] = useState('');
+  const [showDelete, setShowDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  useEffect(() => {
+    if (!showDelete) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setShowDelete(false);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [showDelete]);
 
   useEffect(() => {
     let source: EventSource | null = null;
@@ -110,6 +123,29 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
     byDate.set(shift.date, list);
   }
 
+  function openDelete() {
+    setDeleteError('');
+    setShowDelete(true);
+  }
+
+  async function handleDelete() {
+    if (deleting) return;
+    setDeleteError('');
+    setDeleting(true);
+    try {
+      await authApi.deletePatient(patient.id);
+      onPatientDeleted();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        onLogout();
+        return;
+      }
+      setDeleteError(serverErrorMessage(err) || t('patients.deleteFailed'));
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function handleLogout() {
     try {
       await authApi.logout();
@@ -141,9 +177,14 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
       </header>
       <main className="app-main">
         <BackLink label={t('shifts.backToPatients')} onClick={onBack} />
-        <div className="section-head">
-          <h2>{t('shifts.title')}</h2>
-          <p className="section-subtitle">{t('shifts.count', { count: patientShifts.length })}</p>
+        <div className="section-head section-head-row">
+          <div>
+            <h2>{t('shifts.title')}</h2>
+            <p className="section-subtitle">{t('shifts.count', { count: patientShifts.length })}</p>
+          </div>
+          <button type="button" className="btn btn-danger" onClick={openDelete}>
+            {t('patients.delete')}
+          </button>
         </div>
         {error && <div className="error app-error">{error}</div>}
         {shifts === null ? (
@@ -177,6 +218,41 @@ export default function Shifts({ me, patient, onBack, onSelectShift, onLogout }:
               </div>
             </section>
           ))
+        )}
+        {showDelete && (
+          <div className="modal-backdrop" onClick={() => setShowDelete(false)}>
+            <div
+              className="modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-patient-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h3 id="delete-patient-title" className="modal-title">
+                {t('patients.deleteTitle')}
+              </h3>
+              <p className="modal-text">{t('patients.deleteConfirm', { name: patient.name })}</p>
+              {deleteError && <p className="error modal-error">{deleteError}</p>}
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setShowDelete(false)}
+                  disabled={deleting}
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? t('patients.deleting') : t('patients.delete')}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>

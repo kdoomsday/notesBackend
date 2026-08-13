@@ -33,7 +33,13 @@
     "creating": "Creando…",
     "namePlaceholder": "Nombre del paciente",
     "createFailed": "No se pudo crear el paciente",
-    "alreadyExists": "Ya existe un paciente con ese nombre."
+    "alreadyExists": "Ya existe un paciente con ese nombre.",
+    "delete": "Eliminar paciente",
+    "deleteTitle": "Eliminar paciente",
+    "deleteConfirm": "¿Eliminar a {{name}}? Esta acción no se puede deshacer.",
+    "deleting": "Eliminando…",
+    "deleteFailed": "No se pudo eliminar el paciente",
+    "deleted": "Paciente eliminado"
   },
   "shifts": {
     "title": "Turnos",

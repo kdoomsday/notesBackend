@@ -33,7 +33,13 @@
     "creating": "Creating…",
     "namePlaceholder": "Patient name",
     "createFailed": "Could not create patient",
-    "alreadyExists": "A patient with this name already exists."
+    "alreadyExists": "A patient with this name already exists.",
+    "delete": "Delete patient",
+    "deleteTitle": "Delete patient",
+    "deleteConfirm": "Delete {{name}}? This cannot be undone.",
+    "deleting": "Deleting…",
+    "deleteFailed": "Could not delete patient",
+    "deleted": "Patient deleted"
   },
   "shifts": {
     "title": "Shifts",

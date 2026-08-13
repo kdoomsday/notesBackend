@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { authApi, type Me, type Patient, type Shift } from './api/client';
 import Login from './views/Login';
 import Patients from './views/Patients';
@@ -6,18 +7,29 @@ import Shifts from './views/Shifts';
 import Notes from './views/Notes';
 
 export default function App() {
+  const { t } = useTranslation();
   const [me, setMe] = useState<Me | null>(null);
   const [checking, setChecking] = useState(true);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [selectedShiftList, setSelectedShiftList] = useState<Shift[]>([]);
+  const [notice, setNotice] = useState('');
 
   const handleLogout = useCallback(() => {
     setMe(null);
     setSelectedPatient(null);
     setSelectedShift(null);
     setSelectedShiftList([]);
+    setNotice('');
   }, []);
+
+  const handlePatientDeleted = useCallback(() => {
+    setSelectedShift(null);
+    setSelectedShiftList([]);
+    setSelectedPatient(null);
+    setNotice(t('patients.deleted'));
+    window.setTimeout(() => setNotice(''), 3000);
+  }, [t]);
 
   useEffect(() => {
     authApi
@@ -74,6 +86,7 @@ export default function App() {
         me={me}
         patient={selectedPatient}
         onBack={() => setSelectedPatient(null)}
+        onPatientDeleted={handlePatientDeleted}
         onSelectShift={(shift, orderedShifts) => {
           setSelectedShift(shift);
           setSelectedShiftList(orderedShifts);
@@ -83,5 +96,14 @@ export default function App() {
     );
   }
 
-  return <Patients me={me} onLogout={handleLogout} onSelectPatient={setSelectedPatient} />;
+  return (
+    <>
+      <Patients me={me} onLogout={handleLogout} onSelectPatient={setSelectedPatient} />
+      {notice && (
+        <div className="toast" role="status">
+          {notice}
+        </div>
+      )}
+    </>
+  );
 }
