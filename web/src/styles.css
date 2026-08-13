@@ -602,11 +602,19 @@ body {
 
 /* ---- Toast ---- */
 
-.toast {
+.toast-stack {
   position: fixed;
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 200;
+}
+
+.toast {
   background: #1c2733;
   color: #fff;
   padding: 12px 20px;
@@ -614,17 +622,32 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   font-size: 14px;
   font-weight: 600;
-  z-index: 200;
   animation: toast-in 0.2s ease-out;
+}
+
+.toast-success {
+  background: #047857;
+}
+
+.toast-warning {
+  background: #d0AA23;
+}
+
+.toast-error {
+  background: #b91c1c;
+}
+
+.toast-info {
+  background: #1c2733;
 }
 
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translate(-50%, 8px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
 }
