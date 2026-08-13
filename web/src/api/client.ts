@@ -55,6 +55,14 @@ export interface NotePhoto {
   createdAt: string;
 }
 
+export interface NoteUpdate {
+  id: number;
+  noteId: string;
+  updatedBy: number;
+  updatedAt: string;
+  changes: string;
+}
+
 export interface Operator {
   id: number;
   name: string;
@@ -117,5 +125,6 @@ export const authApi = {
     timeBlocks: () => api<TimeBlock[]>('/api/time-blocks'),
     notes: () => api<Note[]>('/api/notes'),
     notePhotos: (noteId: string) => api<NotePhoto[]>(`/api/notes/${noteId}/photos`),
+    noteUpdates: (noteId: string) => api<NoteUpdate[]>(`/api/note-updates/${noteId}`),
     operators: () => api<Operator[]>('/api/operators'),
 };

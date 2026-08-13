@@ -67,7 +67,10 @@
     "noPhotos": "Sin fotos",
     "showPhoto": "Ver foto {{name}}",
     "photoCount_one": "{{count}} foto",
-    "photoCount_other": "{{count}} fotos"
+    "photoCount_other": "{{count}} fotos",
+    "history": "Historial",
+    "showHistory": "Ver historial",
+    "noHistory": "Todavía no hay historial."
   },
   "errors": {
     "signInFailed": "No se pudo iniciar sesión",

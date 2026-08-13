@@ -67,7 +67,10 @@
     "noPhotos": "No photos",
     "showPhoto": "View photo {{name}}",
     "photoCount_one": "{{count}} photo",
-    "photoCount_other": "{{count}} photos"
+    "photoCount_other": "{{count}} photos",
+    "history": "History",
+    "showHistory": "Show history",
+    "noHistory": "No history yet."
   },
   "errors": {
     "signInFailed": "Sign in failed",

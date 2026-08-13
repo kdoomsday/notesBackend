@@ -211,6 +211,7 @@ export default function Notes({
                 key={note.id}
                 note={note}
                 authorName={operatorName(note.createdBy)}
+                operatorName={operatorName}
                 onLogout={onLogout}
               />
             ))}

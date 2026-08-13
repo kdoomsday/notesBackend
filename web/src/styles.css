@@ -562,6 +562,13 @@ body {
   transition: transform 0.15s;
 }
 
+.note-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .note-card-expanded .note-card-toggle svg {
   transform: rotate(180deg);
 }
@@ -672,6 +679,46 @@ body {
   max-height: 70vh;
   margin: 0 auto;
   border-radius: 8px;
+}
+
+.history-modal {
+  max-width: 560px;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.history-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.history-item-meta {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.history-item-changes {
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* ---- Error ---- */
