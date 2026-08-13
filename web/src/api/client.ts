@@ -31,6 +31,14 @@ export interface NoteCategory {
   iconName: string;
 }
 
+export interface Category {
+  name: string;
+  iconName: string;
+  categoryType: { type: 'Numeric' | 'Text' };
+  fixedText?: string;
+  deleted?: boolean;
+}
+
 export interface Note {
   id: string;
   text: string;
@@ -126,5 +134,6 @@ export const authApi = {
     notes: () => api<Note[]>('/api/notes'),
     notePhotos: (noteId: string) => api<NotePhoto[]>(`/api/notes/${noteId}/photos`),
     noteUpdates: (noteId: string) => api<NoteUpdate[]>(`/api/note-updates/${noteId}`),
+    categories: () => api<Category[]>('/api/categories'),
     operators: () => api<Operator[]>('/api/operators'),
 };
