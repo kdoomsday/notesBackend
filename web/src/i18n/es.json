@@ -70,7 +70,11 @@
     "photoCount_other": "{{count}} fotos",
     "history": "Historial",
     "showHistory": "Ver historial",
-    "noHistory": "Todavía no hay historial."
+    "noHistory": "Todavía no hay historial.",
+    "showDeleted": "Mostrar eliminadas",
+    "hideDeleted": "Ocultar eliminadas",
+    "noActive": "No hay notas activas.",
+    "deleted": "Eliminada"
   },
   "errors": {
     "signInFailed": "No se pudo iniciar sesión",

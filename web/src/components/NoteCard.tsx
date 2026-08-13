@@ -170,12 +170,13 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
 
   return (
     <div
-      className={`note-card${expanded ? ' note-card-expanded' : ''}`}
+      className={`note-card${expanded ? ' note-card-expanded' : ''}${note.deleted ? ' note-card-deleted' : ''}`}
       onClick={toggle}
     >
       <div className="note-card-header">
         <div className="note-meta">
           <span className="note-date">{formatDateTime(note.noteDate, i18n.language)}</span>
+          {note.deleted && <span className="note-deleted-tag">{t('notes.deleted')}</span>}
           {note.category && (
             <span className="note-category">
               <CategoryIcon iconName={note.category.iconName} />

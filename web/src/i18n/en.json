@@ -70,7 +70,11 @@
     "photoCount_other": "{{count}} photos",
     "history": "History",
     "showHistory": "Show history",
-    "noHistory": "No history yet."
+    "noHistory": "No history yet.",
+    "showDeleted": "Show deleted",
+    "hideDeleted": "Hide deleted",
+    "noActive": "No active notes.",
+    "deleted": "Deleted"
   },
   "errors": {
     "signInFailed": "Sign in failed",
