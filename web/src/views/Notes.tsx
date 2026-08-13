@@ -11,7 +11,7 @@ import {
   type TimeBlock,
 } from '../api/client';
 import { serverErrorMessage } from '../i18n';
-import CategoryIcon from '../components/CategoryIcon';
+import NoteCard from '../components/NoteCard';
 import BackLink from '../components/BackLink';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -24,19 +24,6 @@ interface NotesProps {
   onBackToPatients: () => void;
   onNavigateShift: (shift: Shift) => void;
   onLogout: () => void;
-}
-
-function formatDateTime(value: string, locale: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString(locale, {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 function formatDate(value: string, locale: string): string {
@@ -88,6 +75,7 @@ export default function Notes({
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
   const [error, setError] = useState('');
+  const [showDeleted, setShowDeleted] = useState(false);
 
   useEffect(() => {
     let source: EventSource | null = null;
@@ -96,7 +84,7 @@ export default function Notes({
     Promise.all([authApi.notes(), authApi.timeBlocks(), authApi.operators()])
       .then(([allNotes, blocks, ops]) => {
         if (cancelled) return;
-        setNotes(allNotes.filter((n) => !n.deleted && n.shiftId === shift.id));
+        setNotes(allNotes.filter((n) => n.shiftId === shift.id));
         setTimeBlocks(blocks.filter((b) => !b.deleted));
         setOperators(ops.filter((o) => !o.deleted));
 
@@ -114,10 +102,9 @@ export default function Notes({
           if (note.shiftId !== shift.id) return;
           setNotes((prev) => {
             if (!prev) return prev;
-            if (note.deleted) {
-              return prev.filter((n) => n.id !== note.id);
-            }
-            return prev.some((n) => n.id === note.id) ? prev : [...prev, note];
+            return prev.some((n) => n.id === note.id)
+              ? prev.map((n) => (n.id === note.id ? note : n))
+              : [...prev, note];
           });
         });
       })
@@ -144,9 +131,18 @@ export default function Notes({
     onLogout();
   }
 
+  const hasDeleted = (notes ?? []).some((n) => n.deleted);
+
   const shiftNotes = (notes ?? [])
+    .filter((n) => showDeleted || !n.deleted)
     .slice()
-    .sort((a, b) => a.noteDate.localeCompare(b.noteDate));
+    .sort((a, b) =>
+      a.deleted === b.deleted
+        ? a.noteDate.localeCompare(b.noteDate)
+        : a.deleted
+          ? 1
+          : -1
+    );
 
   const block = timeBlocks.find((tb) => tb.id === shift.timeBlockId);
   const shiftLabel = block ? `${block.name} · ${formatDate(shift.date, i18n.language)}` : formatDate(shift.date, i18n.language);
@@ -185,11 +181,23 @@ export default function Notes({
       </header>
       <main className="app-main">
         <BackLink label={t('notes.backToShifts')} onClick={onBack} />
-        <div className="section-head">
-          <h2>{t('notes.title')}</h2>
-          <p className="section-subtitle">
-            {notes === null ? t('common.loading') : t('notes.count', { count: shiftNotes.length })}
-          </p>
+        <div className="section-head section-head-row">
+          <div>
+            <h2>{t('notes.title')}</h2>
+            <p className="section-subtitle">
+              {notes === null ? t('common.loading') : t('notes.count', { count: shiftNotes.length })}
+            </p>
+          </div>
+          {hasDeleted && (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              aria-pressed={showDeleted}
+              onClick={() => setShowDeleted((prev) => !prev)}
+            >
+              {showDeleted ? t('notes.hideDeleted') : t('notes.showDeleted')}
+            </button>
+          )}
         </div>
         <div className="shift-nav">
           <button
@@ -216,23 +224,19 @@ export default function Notes({
         {notes === null ? (
           <p className="section-subtitle">{t('common.loading')}</p>
         ) : shiftNotes.length === 0 ? (
-          <p className="empty-state">{t('notes.empty')}</p>
+          <p className="empty-state">
+            {hasDeleted && !showDeleted ? t('notes.noActive') : t('notes.empty')}
+          </p>
         ) : (
           <div className="notes-list">
             {shiftNotes.map((note) => (
-              <div key={note.id} className="note-card">
-                <div className="note-meta">
-                  <span className="note-date">{formatDateTime(note.noteDate, i18n.language)}</span>
-                  {note.category && (
-                    <span className="note-category">
-                      <CategoryIcon iconName={note.category.iconName} />
-                      {note.category.name}
-                    </span>
-                  )}
-                  <span className="note-author">{operatorName(note.createdBy)}</span>
-                </div>
-                <p className="note-text">{note.text}</p>
-              </div>
+              <NoteCard
+                key={note.id}
+                note={note}
+                authorName={operatorName(note.createdBy)}
+                operatorName={operatorName}
+                onLogout={onLogout}
+              />
             ))}
           </div>
         )}

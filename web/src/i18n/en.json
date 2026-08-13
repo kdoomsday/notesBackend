@@ -6,7 +6,8 @@
     "shift": "Shift",
     "loading": "Loading…",
     "language": "Language",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "close": "Close"
   },
   "nav": {
     "patients": "Patients",
@@ -57,7 +58,23 @@
     "count_other": "{{count}} notes",
     "empty": "No notes for this shift yet.",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "details": "Note details",
+    "author": "Author",
+    "unknownAuthor": "Unknown",
+    "updated": "Updated",
+    "photos": "Photos",
+    "noPhotos": "No photos",
+    "showPhoto": "View photo {{name}}",
+    "photoCount_one": "{{count}} photo",
+    "photoCount_other": "{{count}} photos",
+    "history": "History",
+    "showHistory": "Show history",
+    "noHistory": "No history yet.",
+    "showDeleted": "Show deleted",
+    "hideDeleted": "Hide deleted",
+    "noActive": "No active notes.",
+    "deleted": "Deleted"
   },
   "errors": {
     "signInFailed": "Sign in failed",
