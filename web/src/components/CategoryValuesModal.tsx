@@ -8,6 +8,7 @@ import {
 } from '../api/client';
 import { serverErrorMessage } from '../i18n';
 import CategoryIcon from './CategoryIcon';
+import ValueChart, { type ValueChartPoint } from './ValueChart';
 
 interface CategoryValuesModalProps {
   patientId: string;
@@ -17,6 +18,27 @@ interface CategoryValuesModalProps {
 }
 
 const NOTE_COUNT_OPTIONS = [5, 10, 15];
+const GRAPH_TYPES = ['line', 'bar', 'none'] as const;
+type GraphType = (typeof GRAPH_TYPES)[number];
+
+function extractNumericPoints(notes: Note[], fixedText?: string): ValueChartPoint[] {
+  const points: ValueChartPoint[] = [];
+  for (const note of notes) {
+    let text = note.text;
+    if (fixedText) {
+      text = text.replace(fixedText, '');
+    }
+    text = text.trim().replace(',', '.');
+    if (text === '') continue;
+    const value = Number(text);
+    if (!Number.isNaN(value)) points.push({ label: note.noteDate, value });
+  }
+  return points;
+}
+
+function formatNumber(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value);
+}
 
 function formatDate(value: string, locale: string): string {
   const date = new Date(value);
@@ -41,7 +63,20 @@ export default function CategoryValuesModal({
   const [selected, setSelected] = useState<Category | null>(null);
   const [values, setValues] = useState<Note[] | null>(null);
   const [amount, setAmount] = useState(NOTE_COUNT_OPTIONS[0]);
+  const [graphType, setGraphType] = useState<GraphType>('line');
   const [error, setError] = useState('');
+
+  const isNumeric = selected?.categoryType.type === 'Numeric';
+  const numericPoints =
+    isNumeric && values ? extractNumericPoints(values, selected?.fixedText) : [];
+  const stats =
+    numericPoints.length > 0
+      ? {
+          min: Math.min(...numericPoints.map((p) => p.value)),
+          max: Math.max(...numericPoints.map((p) => p.value)),
+          avg: numericPoints.reduce((sum, point) => sum + point.value, 0) / numericPoints.length,
+        }
+      : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -107,19 +142,52 @@ export default function CategoryValuesModal({
         </h3>
         {error && <p className="error modal-error">{error}</p>}
         {selected && (
-          <label className="value-count-selector">
-            <span>{t('notes.amount')}</span>
-            <select
-              value={amount}
-              onChange={(event) => setAmount(Number(event.target.value))}
-            >
-              {NOTE_COUNT_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="value-toolbar">
+            {isNumeric && (
+              <label className="value-select">
+                <span>{t('notes.graph')}</span>
+                <select
+                  value={graphType}
+                  onChange={(event) => setGraphType(event.target.value as GraphType)}
+                >
+                  {GRAPH_TYPES.map((option) => (
+                    <option key={option} value={option}>
+                      {t(`notes.graph${option[0].toUpperCase()}${option.slice(1)}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <label className="value-select">
+              <span>{t('notes.amount')}</span>
+              <select
+                value={amount}
+                onChange={(event) => setAmount(Number(event.target.value))}
+              >
+                {NOTE_COUNT_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
+        {selected && stats && (
+          <div className="value-stats">
+            <span>
+              <strong>{t('notes.min')}</strong> {formatNumber(stats.min, i18n.language)}
+            </span>
+            <span>
+              <strong>{t('notes.max')}</strong> {formatNumber(stats.max, i18n.language)}
+            </span>
+            <span>
+              <strong>{t('notes.avg')}</strong> {formatNumber(stats.avg, i18n.language)}
+            </span>
+          </div>
+        )}
+        {selected && isNumeric && numericPoints.length > 0 && graphType !== 'none' && (
+          <ValueChart points={numericPoints} type={graphType} locale={i18n.language} />
         )}
         {categories === null ? (
           <p className="modal-text">{t('common.loading')}</p>
