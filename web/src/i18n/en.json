@@ -11,6 +11,7 @@
   },
   "nav": {
     "patients": "Patients",
+    "operators": "Operators",
     "logOut": "Log out"
   },
   "login": {
@@ -41,6 +42,34 @@
     "deleting": "Deleting…",
     "deleteFailed": "Could not delete patient",
     "deleted": "Patient deleted"
+  },
+  "operators": {
+    "title": "Operators",
+    "count_one": "{{count}} operator",
+    "count_other": "{{count}} operators",
+    "empty": "No operators yet.",
+    "newOperator": "Add operator",
+    "create": "Create",
+    "name": "Name",
+    "pin": "PIN",
+    "creating": "Creating…",
+    "namePlaceholder": "Operator name",
+    "pinPlaceholder": "e.g. 1234",
+    "createFailed": "Could not create operator",
+    "alreadyExists": "An operator with this name already exists.",
+    "delete": "Delete operator",
+    "deleteTitle": "Delete operator",
+    "deleteConfirm": "Delete {{name}}?",
+    "deleting": "Deleting…",
+    "deleteFailed": "Could not delete operator",
+    "deleted": "Operator deleted",
+    "noActive": "No active operators.",
+    "deletedSection": "Deleted operators",
+    "deletedCount_one": "{{count}} deleted operator",
+    "deletedCount_other": "{{count}} deleted operators",
+    "deletedTag": "Deleted",
+    "restore": "Restore operator",
+    "restoreFailed": "Could not restore operator"
   },
   "shifts": {
     "title": "Shifts",

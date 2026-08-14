@@ -74,6 +74,7 @@ export interface NoteUpdate {
 export interface Operator {
   id: number;
   name: string;
+  pin?: string;
   deleted?: boolean;
 }
 
@@ -138,4 +139,9 @@ export const authApi = {
     noteUpdates: (noteId: string) => api<NoteUpdate[]>(`/api/note-updates/${noteId}`),
     categories: () => api<Category[]>('/api/categories'),
     operators: () => api<Operator[]>('/api/operators'),
+    createOperator: (name: string, pin: string) =>
+        api<Operator>('/api/operators', { method: 'POST', body: JSON.stringify({ name, pin }) }),
+    deleteOperator: (id: number) => api<unknown>(`/api/operators/${id}`, { method: 'DELETE' }),
+    restoreOperator: (id: number) =>
+        api<unknown>(`/api/operators/restore/${id}`, { method: 'DELETE' }),
 };

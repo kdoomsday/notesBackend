@@ -11,6 +11,7 @@
   },
   "nav": {
     "patients": "Pacientes",
+    "operators": "Operadores",
     "logOut": "Cerrar sesión"
   },
   "login": {
@@ -41,6 +42,34 @@
     "deleting": "Eliminando…",
     "deleteFailed": "No se pudo eliminar el paciente",
     "deleted": "Paciente eliminado"
+  },
+  "operators": {
+    "title": "Operadores",
+    "count_one": "{{count}} operador",
+    "count_other": "{{count}} operadores",
+    "empty": "Todavía no hay operadores.",
+    "newOperator": "Añadir operador",
+    "create": "Crear",
+    "name": "Nombre",
+    "pin": "PIN",
+    "creating": "Creando…",
+    "namePlaceholder": "Nombre del operador",
+    "pinPlaceholder": "p. ej. 1234",
+    "createFailed": "No se pudo crear el operador",
+    "alreadyExists": "Ya existe un operador con este nombre.",
+    "delete": "Eliminar operador",
+    "deleteTitle": "Eliminar operador",
+    "deleteConfirm": "¿Eliminar a {{name}}?",
+    "deleting": "Eliminando…",
+    "deleteFailed": "No se pudo eliminar el operador",
+    "deleted": "Operador eliminado",
+    "noActive": "No hay operadores activos.",
+    "deletedSection": "Operadores eliminados",
+    "deletedCount_one": "{{count}} operador eliminado",
+    "deletedCount_other": "{{count}} operadores eliminados",
+    "deletedTag": "Eliminado",
+    "restore": "Restaurar operador",
+    "restoreFailed": "No se pudo restaurar el operador"
   },
   "shifts": {
     "title": "Turnos",
