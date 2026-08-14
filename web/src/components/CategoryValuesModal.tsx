@@ -5,17 +5,18 @@ import {
   authApi,
   type Category,
   type Note,
-  type Shift,
 } from '../api/client';
 import { serverErrorMessage } from '../i18n';
 import CategoryIcon from './CategoryIcon';
 
 interface CategoryValuesModalProps {
-  shifts: Shift[];
+  patientId: string;
   operatorName: (id: number) => string;
   onLogout: () => void;
   onClose: () => void;
 }
+
+const LAST_NOTE_COUNT = 5;
 
 function formatDate(value: string, locale: string): string {
   const date = new Date(value);
@@ -30,24 +31,24 @@ function formatDate(value: string, locale: string): string {
 }
 
 export default function CategoryValuesModal({
-  shifts,
+  patientId,
   operatorName,
   onLogout,
   onClose,
 }: CategoryValuesModalProps) {
   const { t, i18n } = useTranslation();
   const [categories, setCategories] = useState<Category[] | null>(null);
-  const [notes, setNotes] = useState<Note[] | null>(null);
   const [selected, setSelected] = useState<Category | null>(null);
+  const [values, setValues] = useState<Note[] | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([authApi.categories(), authApi.notes()])
-      .then(([cats, allNotes]) => {
+    authApi
+      .categories()
+      .then((cats) => {
         if (cancelled) return;
         setCategories(cats.filter((c) => !c.deleted));
-        setNotes(allNotes);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -67,20 +68,29 @@ export default function CategoryValuesModal({
     };
   }, [onClose, onLogout, t]);
 
-  const patientShiftIds = new Set(shifts.map((s) => s.id));
-  const values =
-    notes && selected
-      ? notes
-          .filter(
-            (n) =>
-              !n.deleted &&
-              n.category?.name === selected.name &&
-              patientShiftIds.has(n.shiftId)
-          )
-          .slice()
-          .sort((a, b) => b.noteDate.localeCompare(a.noteDate))
-          .slice(0, 5)
-      : null;
+  useEffect(() => {
+    if (!selected) return;
+    let cancelled = false;
+    setValues(null);
+    setError('');
+    authApi
+      .lastNotesByCategory(patientId, selected.name, LAST_NOTE_COUNT)
+      .then((notes) => {
+        if (cancelled) return;
+        setValues(notes);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        if (err instanceof ApiError && err.status === 401) {
+          onLogout();
+          return;
+        }
+        setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('notes.values') }));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [patientId, selected, onLogout, t]);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>

@@ -248,7 +248,7 @@ export default function Notes({
       </main>
       {showValues && (
         <CategoryValuesModal
-          shifts={shifts}
+          patientId={patient.id}
           operatorName={operatorName}
           onLogout={onLogout}
           onClose={() => setShowValues(false)}

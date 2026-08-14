@@ -132,6 +132,8 @@ export const authApi = {
     shifts: () => api<Shift[]>('/api/shifts'),
     timeBlocks: () => api<TimeBlock[]>('/api/time-blocks'),
     notes: () => api<Note[]>('/api/notes'),
+    lastNotesByCategory: (patientId: string, categoryName: string, amount: number) =>
+        api<Note[]>(`/api/notes/last/${patientId}/${encodeURIComponent(categoryName)}/${amount}`),
     notePhotos: (noteId: string) => api<NotePhoto[]>(`/api/notes/${noteId}/photos`),
     noteUpdates: (noteId: string) => api<NoteUpdate[]>(`/api/note-updates/${noteId}`),
     categories: () => api<Category[]>('/api/categories'),
