@@ -74,7 +74,12 @@
     "showDeleted": "Mostrar eliminadas",
     "hideDeleted": "Ocultar eliminadas",
     "noActive": "No hay notas activas.",
-    "deleted": "Eliminada"
+    "deleted": "Eliminada",
+    "values": "Categorías",
+    "amount": "Cantidad",
+    "chooseCategory": "Elige una categoría",
+    "backToCategories": "Volver a categorías",
+    "noValues": "Todavía no hay valores para esta categoría."
   },
   "errors": {
     "signInFailed": "No se pudo iniciar sesión",

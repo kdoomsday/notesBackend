@@ -12,6 +12,7 @@ import {
 } from '../api/client';
 import { serverErrorMessage } from '../i18n';
 import NoteCard from '../components/NoteCard';
+import CategoryValuesModal from '../components/CategoryValuesModal';
 import BackLink from '../components/BackLink';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -76,6 +77,7 @@ export default function Notes({
   const [operators, setOperators] = useState<Operator[]>([]);
   const [error, setError] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
+  const [showValues, setShowValues] = useState(false);
 
   useEffect(() => {
     let source: EventSource | null = null;
@@ -188,7 +190,10 @@ export default function Notes({
               {notes === null ? t('common.loading') : t('notes.count', { count: shiftNotes.length })}
             </p>
           </div>
-          {hasDeleted && (
+          <div className="section-head-actions">
+            <button type="button" className="btn btn-ghost" onClick={() => setShowValues(true)}>
+              {t('notes.values')}
+            </button>
             <button
               type="button"
               className="btn btn-ghost"
@@ -197,7 +202,7 @@ export default function Notes({
             >
               {showDeleted ? t('notes.hideDeleted') : t('notes.showDeleted')}
             </button>
-          )}
+          </div>
         </div>
         <div className="shift-nav">
           <button
@@ -241,6 +246,14 @@ export default function Notes({
           </div>
         )}
       </main>
+      {showValues && (
+        <CategoryValuesModal
+          patientId={patient.id}
+          operatorName={operatorName}
+          onLogout={onLogout}
+          onClose={() => setShowValues(false)}
+        />
+      )}
     </div>
   );
 }

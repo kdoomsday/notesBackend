@@ -74,7 +74,12 @@
     "showDeleted": "Show deleted",
     "hideDeleted": "Hide deleted",
     "noActive": "No active notes.",
-    "deleted": "Deleted"
+    "deleted": "Deleted",
+    "values": "Categories",
+    "amount": "Amount",
+    "chooseCategory": "Choose a category",
+    "backToCategories": "Back to categories",
+    "noValues": "No values for this category yet."
   },
   "errors": {
     "signInFailed": "Sign in failed",
