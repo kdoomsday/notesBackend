@@ -18,6 +18,25 @@ interface CategoryValuesModalProps {
 
 const NOTE_COUNT_OPTIONS = [5, 10, 15];
 
+function extractNumericValues(notes: Note[], fixedText?: string): number[] {
+  const values: number[] = [];
+  for (const note of notes) {
+    let text = note.text;
+    if (fixedText) {
+      text = text.replace(fixedText, '');
+    }
+    text = text.trim().replace(',', '.');
+    if (text === '') continue;
+    const value = Number(text);
+    if (!Number.isNaN(value)) values.push(value);
+  }
+  return values;
+}
+
+function formatNumber(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value);
+}
+
 function formatDate(value: string, locale: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
@@ -42,6 +61,17 @@ export default function CategoryValuesModal({
   const [values, setValues] = useState<Note[] | null>(null);
   const [amount, setAmount] = useState(NOTE_COUNT_OPTIONS[0]);
   const [error, setError] = useState('');
+
+  const isNumeric = selected?.categoryType.type === 'Numeric';
+  const numericValues = isNumeric && values ? extractNumericValues(values, selected?.fixedText) : [];
+  const stats =
+    numericValues.length > 0
+      ? {
+          min: Math.min(...numericValues),
+          max: Math.max(...numericValues),
+          avg: numericValues.reduce((sum, value) => sum + value, 0) / numericValues.length,
+        }
+      : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -120,6 +150,19 @@ export default function CategoryValuesModal({
               ))}
             </select>
           </label>
+        )}
+        {selected && stats && (
+          <div className="value-stats">
+            <span>
+              <strong>{t('notes.min')}</strong> {formatNumber(stats.min, i18n.language)}
+            </span>
+            <span>
+              <strong>{t('notes.max')}</strong> {formatNumber(stats.max, i18n.language)}
+            </span>
+            <span>
+              <strong>{t('notes.avg')}</strong> {formatNumber(stats.avg, i18n.language)}
+            </span>
+          </div>
         )}
         {categories === null ? (
           <p className="modal-text">{t('common.loading')}</p>

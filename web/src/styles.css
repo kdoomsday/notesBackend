@@ -787,6 +787,20 @@ body {
   cursor: pointer;
 }
 
+.value-stats {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.value-stats strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .category-list {
   list-style: none;
   margin: 0;

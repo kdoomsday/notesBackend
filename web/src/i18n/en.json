@@ -77,6 +77,9 @@
     "deleted": "Deleted",
     "values": "Categories",
     "amount": "Amount",
+    "min": "Min",
+    "max": "Max",
+    "avg": "Avg",
     "chooseCategory": "Choose a category",
     "backToCategories": "Back to categories",
     "noValues": "No values for this category yet."
