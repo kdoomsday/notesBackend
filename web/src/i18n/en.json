@@ -76,6 +76,7 @@
     "noActive": "No active notes.",
     "deleted": "Deleted",
     "values": "Categories",
+    "amount": "Amount",
     "chooseCategory": "Choose a category",
     "backToCategories": "Back to categories",
     "noValues": "No values for this category yet."

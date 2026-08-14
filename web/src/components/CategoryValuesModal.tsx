@@ -16,7 +16,7 @@ interface CategoryValuesModalProps {
   onClose: () => void;
 }
 
-const LAST_NOTE_COUNT = 5;
+const NOTE_COUNT_OPTIONS = [5, 10, 15];
 
 function formatDate(value: string, locale: string): string {
   const date = new Date(value);
@@ -40,6 +40,7 @@ export default function CategoryValuesModal({
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [selected, setSelected] = useState<Category | null>(null);
   const [values, setValues] = useState<Note[] | null>(null);
+  const [amount, setAmount] = useState(NOTE_COUNT_OPTIONS[0]);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -74,7 +75,7 @@ export default function CategoryValuesModal({
     setValues(null);
     setError('');
     authApi
-      .lastNotesByCategory(patientId, selected.name, LAST_NOTE_COUNT)
+      .lastNotesByCategory(patientId, selected.name, amount)
       .then((notes) => {
         if (cancelled) return;
         setValues(notes);
@@ -90,7 +91,7 @@ export default function CategoryValuesModal({
     return () => {
       cancelled = true;
     };
-  }, [patientId, selected, onLogout, t]);
+  }, [patientId, selected, amount, onLogout, t]);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -105,6 +106,21 @@ export default function CategoryValuesModal({
           {selected ? selected.name : t('notes.chooseCategory')}
         </h3>
         {error && <p className="error modal-error">{error}</p>}
+        {selected && (
+          <label className="value-count-selector">
+            <span>{t('notes.amount')}</span>
+            <select
+              value={amount}
+              onChange={(event) => setAmount(Number(event.target.value))}
+            >
+              {NOTE_COUNT_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         {categories === null ? (
           <p className="modal-text">{t('common.loading')}</p>
         ) : !selected ? (
