@@ -8,6 +8,7 @@ import {
 } from '../api/client';
 import { serverErrorMessage } from '../i18n';
 import CategoryIcon from './CategoryIcon';
+import ValueChart, { type ValueChartPoint } from './ValueChart';
 
 interface CategoryValuesModalProps {
   patientId: string;
@@ -17,9 +18,11 @@ interface CategoryValuesModalProps {
 }
 
 const NOTE_COUNT_OPTIONS = [5, 10, 15];
+const GRAPH_TYPES = ['line', 'bar', 'none'] as const;
+type GraphType = (typeof GRAPH_TYPES)[number];
 
-function extractNumericValues(notes: Note[], fixedText?: string): number[] {
-  const values: number[] = [];
+function extractNumericPoints(notes: Note[], fixedText?: string): ValueChartPoint[] {
+  const points: ValueChartPoint[] = [];
   for (const note of notes) {
     let text = note.text;
     if (fixedText) {
@@ -28,9 +31,9 @@ function extractNumericValues(notes: Note[], fixedText?: string): number[] {
     text = text.trim().replace(',', '.');
     if (text === '') continue;
     const value = Number(text);
-    if (!Number.isNaN(value)) values.push(value);
+    if (!Number.isNaN(value)) points.push({ label: note.noteDate, value });
   }
-  return values;
+  return points;
 }
 
 function formatNumber(value: number, locale: string): string {
@@ -60,16 +63,18 @@ export default function CategoryValuesModal({
   const [selected, setSelected] = useState<Category | null>(null);
   const [values, setValues] = useState<Note[] | null>(null);
   const [amount, setAmount] = useState(NOTE_COUNT_OPTIONS[0]);
+  const [graphType, setGraphType] = useState<GraphType>('line');
   const [error, setError] = useState('');
 
   const isNumeric = selected?.categoryType.type === 'Numeric';
-  const numericValues = isNumeric && values ? extractNumericValues(values, selected?.fixedText) : [];
+  const numericPoints =
+    isNumeric && values ? extractNumericPoints(values, selected?.fixedText) : [];
   const stats =
-    numericValues.length > 0
+    numericPoints.length > 0
       ? {
-          min: Math.min(...numericValues),
-          max: Math.max(...numericValues),
-          avg: numericValues.reduce((sum, value) => sum + value, 0) / numericValues.length,
+          min: Math.min(...numericPoints.map((p) => p.value)),
+          max: Math.max(...numericPoints.map((p) => p.value)),
+          avg: numericPoints.reduce((sum, point) => sum + point.value, 0) / numericPoints.length,
         }
       : null;
 
@@ -137,19 +142,36 @@ export default function CategoryValuesModal({
         </h3>
         {error && <p className="error modal-error">{error}</p>}
         {selected && (
-          <label className="value-count-selector">
-            <span>{t('notes.amount')}</span>
-            <select
-              value={amount}
-              onChange={(event) => setAmount(Number(event.target.value))}
-            >
-              {NOTE_COUNT_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="value-toolbar">
+            {isNumeric && (
+              <label className="value-select">
+                <span>{t('notes.graph')}</span>
+                <select
+                  value={graphType}
+                  onChange={(event) => setGraphType(event.target.value as GraphType)}
+                >
+                  {GRAPH_TYPES.map((option) => (
+                    <option key={option} value={option}>
+                      {t(`notes.graph${option[0].toUpperCase()}${option.slice(1)}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <label className="value-select">
+              <span>{t('notes.amount')}</span>
+              <select
+                value={amount}
+                onChange={(event) => setAmount(Number(event.target.value))}
+              >
+                {NOTE_COUNT_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         )}
         {selected && stats && (
           <div className="value-stats">
@@ -163,6 +185,9 @@ export default function CategoryValuesModal({
               <strong>{t('notes.avg')}</strong> {formatNumber(stats.avg, i18n.language)}
             </span>
           </div>
+        )}
+        {selected && isNumeric && numericPoints.length > 0 && graphType !== 'none' && (
+          <ValueChart points={numericPoints} type={graphType} locale={i18n.language} />
         )}
         {categories === null ? (
           <p className="modal-text">{t('common.loading')}</p>

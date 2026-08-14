@@ -80,6 +80,11 @@
     "min": "Min",
     "max": "Max",
     "avg": "Avg",
+    "graph": "Graph",
+    "graphLine": "Line",
+    "graphBar": "Bar",
+    "graphNone": "None",
+    "chartAria": "Chart of {{count}} values",
     "chooseCategory": "Choose a category",
     "backToCategories": "Back to categories",
     "noValues": "No values for this category yet."
