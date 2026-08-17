@@ -138,6 +138,15 @@ export const authApi = {
     notePhotos: (noteId: string) => api<NotePhoto[]>(`/api/notes/${noteId}/photos`),
     noteUpdates: (noteId: string) => api<NoteUpdate[]>(`/api/note-updates/${noteId}`),
     categories: () => api<Category[]>('/api/categories'),
+    createCategory: (category: Category) =>
+        api<unknown>('/api/categories', { method: 'POST', body: JSON.stringify(category) }),
+    updateCategory: (oldName: string, category: Category) =>
+        api<unknown>(`/api/categories/${encodeURIComponent(oldName)}`, {
+            method: 'PUT',
+            body: JSON.stringify(category),
+        }),
+    toggleDeleteCategory: (name: string) =>
+        api<unknown>(`/api/categories/${encodeURIComponent(name)}`, { method: 'DELETE' }),
     operators: () => api<Operator[]>('/api/operators'),
     createOperator: (name: string, pin: string) =>
         api<Operator>('/api/operators', { method: 'POST', body: JSON.stringify({ name, pin }) }),

@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useSyncExternalStore, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authApi, type Me } from '../api/client';
+import { getLogoUrl, subscribeLogo } from '../config';
 import { serverErrorMessage } from '../i18n';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -10,6 +11,7 @@ interface LoginProps {
 
 export default function Login({ onLogin }: LoginProps) {
   const { t } = useTranslation();
+  const logoUrl = useSyncExternalStore(subscribeLogo, getLogoUrl);
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -32,7 +34,7 @@ export default function Login({ onLogin }: LoginProps) {
   return (
     <div className="view login-view">
       <div className="login-card">
-        <div className="login-logo">N</div>
+        {logoUrl ? <img className="login-logo" src={logoUrl} alt="" /> : <div className="login-logo">N</div>}
         <h1 className="login-title">{t('login.title')}</h1>
         <p className="login-subtitle">{t('login.subtitle')}</p>
         <div className="login-lang">

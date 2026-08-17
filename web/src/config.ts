@@ -3,6 +3,43 @@ export interface UiConfig {
   accentColor: string;
 }
 
+let currentLogoUrl: string | null = null;
+let logoObjectUrl: string | null = null;
+const logoListeners = new Set<() => void>();
+
+export function getLogoUrl(): string | null {
+  return currentLogoUrl;
+}
+
+export function subscribeLogo(listener: () => void): () => void {
+  logoListeners.add(listener);
+  return () => {
+    logoListeners.delete(listener);
+  };
+}
+
+function setLogoUrl(url: string | null): void {
+  if (url === currentLogoUrl) return;
+  currentLogoUrl = url;
+  logoListeners.forEach((listener) => listener());
+}
+
+export async function loadLogoUrl(): Promise<string | null> {
+  try {
+    const res = await fetch('/api/config/logo', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Unexpected status ${res.status}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    if (logoObjectUrl) URL.revokeObjectURL(logoObjectUrl);
+    logoObjectUrl = url;
+    setLogoUrl(url);
+    return url;
+  } catch {
+    setLogoUrl(null);
+    return null;
+  }
+}
+
 interface Rgb {
   r: number;
   g: number;

@@ -1,16 +1,18 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authApi, type Me, type Patient, type Shift } from './api/client';
 import { useToast } from './components/Toast';
+import { getLogoUrl, subscribeLogo } from './config';
 import Login from './views/Login';
 import Patients from './views/Patients';
 import Shifts from './views/Shifts';
 import Notes from './views/Notes';
+import Categories from './views/Categories';
 import Operators from './views/Operators';
 
-type Section = 'patients' | 'operators';
+type Section = 'patients' | 'categories' | 'operators';
 
-function NavIcon({ name }: { name: 'patients' | 'operators' }) {
+function NavIcon({ name }: { name: 'patients' | 'categories' | 'operators' }) {
   if (name === 'patients') {
     return (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -18,6 +20,14 @@ function NavIcon({ name }: { name: 'patients' | 'operators' }) {
         <circle cx="9" cy="7" r="4" />
         <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    );
+  }
+  if (name === 'categories') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
+        <path d="M7 7h.01" />
       </svg>
     );
   }
@@ -34,6 +44,7 @@ function NavIcon({ name }: { name: 'patients' | 'operators' }) {
 export default function App() {
   const { t } = useTranslation();
   const notify = useToast();
+  const logoUrl = useSyncExternalStore(subscribeLogo, getLogoUrl);
   const [me, setMe] = useState<Me | null>(null);
   const [checking, setChecking] = useState(true);
   const [section, setSection] = useState<Section>('patients');
@@ -126,6 +137,8 @@ export default function App() {
         onLogout={handleLogout}
       />
     );
+  } else if (section === 'categories') {
+    content = <Categories me={me} onLogout={handleLogout} />;
   } else if (section === 'operators') {
     content = <Operators me={me} onLogout={handleLogout} />;
   } else {
@@ -135,7 +148,9 @@ export default function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="sidebar-brand">{t('app.title')}</div>
+        <div className="sidebar-brand">
+          {logoUrl ? <img className="sidebar-logo" src={logoUrl} alt="" /> : t('app.title')}
+        </div>
         <nav className="sidebar-nav">
           <button
             type="button"
@@ -144,6 +159,14 @@ export default function App() {
           >
             <NavIcon name="patients" />
             {t('nav.patients')}
+          </button>
+          <button
+            type="button"
+            className={`sidebar-link${section === 'categories' ? ' sidebar-link-active' : ''}`}
+            onClick={() => goToSection('categories')}
+          >
+            <NavIcon name="categories" />
+            {t('nav.categories')}
           </button>
           <button
             type="button"
