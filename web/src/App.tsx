@@ -9,10 +9,12 @@ import Shifts from './views/Shifts';
 import Notes from './views/Notes';
 import Categories from './views/Categories';
 import Operators from './views/Operators';
+import Users from './views/Users';
+import Roles from './views/Roles';
 
-type Section = 'patients' | 'categories' | 'operators';
+type Section = 'patients' | 'categories' | 'operators' | 'users' | 'roles';
 
-function NavIcon({ name }: { name: 'patients' | 'categories' | 'operators' }) {
+function NavIcon({ name }: { name: 'patients' | 'categories' | 'operators' | 'users' | 'roles' }) {
   if (name === 'patients') {
     return (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -28,6 +30,21 @@ function NavIcon({ name }: { name: 'patients' | 'categories' | 'operators' }) {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
         <path d="M7 7h.01" />
+      </svg>
+    );
+  }
+  if (name === 'users') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    );
+  }
+  if (name === 'roles') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
     );
   }
@@ -141,6 +158,10 @@ export default function App() {
     content = <Categories me={me} onLogout={handleLogout} />;
   } else if (section === 'operators') {
     content = <Operators me={me} onLogout={handleLogout} />;
+  } else if (section === 'users') {
+    content = <Users me={me} onLogout={handleLogout} />;
+  } else if (section === 'roles') {
+    content = <Roles me={me} onLogout={handleLogout} />;
   } else {
     content = <Patients me={me} onLogout={handleLogout} onSelectPatient={setSelectedPatient} />;
   }
@@ -175,6 +196,22 @@ export default function App() {
           >
             <NavIcon name="operators" />
             {t('nav.operators')}
+          </button>
+          <button
+            type="button"
+            className={`sidebar-link${section === 'users' ? ' sidebar-link-active' : ''}`}
+            onClick={() => goToSection('users')}
+          >
+            <NavIcon name="users" />
+            {t('nav.users')}
+          </button>
+          <button
+            type="button"
+            className={`sidebar-link${section === 'roles' ? ' sidebar-link-active' : ''}`}
+            onClick={() => goToSection('roles')}
+          >
+            <NavIcon name="roles" />
+            {t('nav.roles')}
           </button>
         </nav>
       </aside>

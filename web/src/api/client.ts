@@ -78,6 +78,50 @@ export interface Operator {
   deleted?: boolean;
 }
 
+export interface PresentationUser {
+  id: number;
+  name: string;
+  deleted: boolean;
+}
+
+export interface Role {
+  id: number;
+  name: string;
+  deleted: boolean;
+}
+
+export interface RolePermission {
+  type: string;
+}
+
+export const PERMISSION_TYPES: string[] = [
+  'AddNotePhotos',
+  'CreateCategories',
+  'CreateNote',
+  'CreateOperator',
+  'CreatePatient',
+  'CreateRoles',
+  'CreateShift',
+  'CreateTimeBlock',
+  'CreateUser',
+  'DeleteNotePhotos',
+  'DeleteOperator',
+  'DeletePatient',
+  'DeleteTimeBlock',
+  'DeleteUser',
+  'ListCategories',
+  'ListNoteUpdates',
+  'ListNotes',
+  'ListOperators',
+  'ListPatients',
+  'ListRoles',
+  'ListShifts',
+  'ListTableUpdateLogs',
+  'ListTimeBlocks',
+  'ListUsers',
+  'ViewNotePhotos',
+];
+
 export class ApiError extends Error {
   status: number;
 
@@ -153,4 +197,26 @@ export const authApi = {
     deleteOperator: (id: number) => api<unknown>(`/api/operators/${id}`, { method: 'DELETE' }),
     restoreOperator: (id: number) =>
         api<unknown>(`/api/operators/restore/${id}`, { method: 'DELETE' }),
+    users: () => api<PresentationUser[]>('/api/users'),
+    createUser: (name: string, password: string) =>
+        api<unknown>('/api/users', {
+            method: 'POST',
+            body: JSON.stringify({ name, password }),
+        }),
+    updateUser: (id: number, user: { name: string; password?: string }) =>
+        api<unknown>(`/api/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(user),
+        }),
+    toggleDeleteUser: (id: number) =>
+        api<unknown>(`/api/users/${id}`, { method: 'DELETE' }),
+    roles: () => api<Role[]>('/api/roles'),
+    createRole: (name: string) =>
+        api<Role>('/api/roles', { method: 'POST', body: JSON.stringify({ name }) }),
+    rolePermissions: (roleId: number) =>
+        api<RolePermission[]>(`/api/roles/${roleId}/permissions`),
+    addRolePermission: (roleId: number, permissionType: string) =>
+        api<unknown>(`/api/roles/${roleId}/permissions/${encodeURIComponent(permissionType)}`, { method: 'PUT' }),
+    removeRolePermission: (roleId: number, permissionType: string) =>
+        api<unknown>(`/api/roles/${roleId}/permissions/${encodeURIComponent(permissionType)}`, { method: 'DELETE' }),
 };

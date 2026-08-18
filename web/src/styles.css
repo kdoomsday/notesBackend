@@ -559,6 +559,49 @@ img.login-logo {
   margin-top: 20px;
 }
 
+.modal-wide {
+  max-width: 520px;
+}
+
+.permission-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.permission-item {
+  border-radius: 8px;
+}
+
+.permission-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.permission-label:hover {
+  background: var(--hover);
+}
+
+.permission-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+}
+
+.permission-name {
+  font-size: 14px;
+  font-family: monospace;
+}
+
 .patient-card {
   background: var(--surface);
   border: 1px solid var(--border);
