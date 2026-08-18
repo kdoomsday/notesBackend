@@ -70,10 +70,6 @@ export default function Roles({ me, onLogout }: RolesProps) {
       setRoles((prev) => (prev ? [...prev, created] : [created]));
       setShowForm(false);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        onLogout();
-        return;
-      }
       if (err instanceof ApiError && err.status === 409) {
         setFormError(t('roles.alreadyExists'));
         return;

@@ -122,6 +122,34 @@ export const PERMISSION_TYPES: string[] = [
   'ViewNotePhotos',
 ];
 
+export const PERMISSION_ID_BY_NAME: Record<string, number> = {
+  ListPatients: 1,
+  CreatePatient: 2,
+  ListShifts: 3,
+  CreateShift: 4,
+  ListNotes: 5,
+  CreateNote: 6,
+  ListOperators: 7,
+  CreateOperator: 8,
+  DeleteOperator: 9,
+  ListCategories: 10,
+  CreateCategories: 11,
+  ViewNotePhotos: 12,
+  AddNotePhotos: 13,
+  DeleteNotePhotos: 14,
+  ListNoteUpdates: 15,
+  DeletePatient: 16,
+  ListTableUpdateLogs: 17,
+  ListTimeBlocks: 18,
+  CreateTimeBlock: 19,
+  DeleteTimeBlock: 20,
+  CreateUser: 21,
+  DeleteUser: 22,
+  ListUsers: 23,
+  ListRoles: 24,
+  CreateRoles: 25,
+};
+
 export class ApiError extends Error {
   status: number;
 
@@ -215,8 +243,12 @@ export const authApi = {
         api<Role>('/api/roles', { method: 'POST', body: JSON.stringify({ name }) }),
     rolePermissions: (roleId: number) =>
         api<RolePermission[]>(`/api/roles/${roleId}/permissions`),
-    addRolePermission: (roleId: number, permissionType: string) =>
-        api<unknown>(`/api/roles/${roleId}/permissions/${encodeURIComponent(permissionType)}`, { method: 'PUT' }),
-    removeRolePermission: (roleId: number, permissionType: string) =>
-        api<unknown>(`/api/roles/${roleId}/permissions/${encodeURIComponent(permissionType)}`, { method: 'DELETE' }),
+    addRolePermission: (roleId: number, permissionType: string) => {
+        const id = PERMISSION_ID_BY_NAME[permissionType];
+        return api<unknown>(`/api/roles/${roleId}/permissions/${id}`, { method: 'PUT' });
+    },
+    removeRolePermission: (roleId: number, permissionType: string) => {
+        const id = PERMISSION_ID_BY_NAME[permissionType];
+        return api<unknown>(`/api/roles/${roleId}/permissions/${id}`, { method: 'DELETE' });
+    },
 };
