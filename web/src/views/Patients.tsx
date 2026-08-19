@@ -40,12 +40,12 @@ export default function Patients({ me, onLogout, onSelectPatient }: PatientsProp
       .then(setPatients)
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setPatients([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('patients.title') }));
       });
-  }, [onLogout, t]);
+  }, [t]);
 
   useEffect(() => {
     if (!showCreate) return;

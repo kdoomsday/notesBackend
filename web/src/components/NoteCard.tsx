@@ -110,7 +110,7 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
       .catch((err: unknown) => {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setPhotos([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('notes.photos') }));
@@ -118,7 +118,7 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
     return () => {
       cancelled = true;
     };
-  }, [expanded, note.id, onLogout, t]);
+  }, [expanded, note.id, t]);
 
   useEffect(() => {
     if (!viewPhoto) return;
@@ -142,7 +142,7 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
       .catch((err: unknown) => {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setHistory([]);
           return;
         }
         setHistoryError(
@@ -157,7 +157,7 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
       cancelled = true;
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [note.id, onLogout, showHistory, t]);
+  }, [note.id, showHistory, t]);
 
   function openHistory() {
     setHistory(null);

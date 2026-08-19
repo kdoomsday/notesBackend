@@ -100,7 +100,8 @@ export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelect
       })
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setShifts([]);
+          setTimeBlocks([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('shifts.title') }));
@@ -110,7 +111,7 @@ export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelect
       cancelled = true;
       source?.close();
     };
-  }, [onLogout, t]);
+  }, [t]);
 
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();

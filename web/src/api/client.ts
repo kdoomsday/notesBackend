@@ -84,6 +84,19 @@ export interface PresentationUser {
   deleted: boolean;
 }
 
+export interface User {
+  id: number;
+  name: string;
+  passwordHash: string;
+  salt: string;
+  deleted: boolean;
+}
+
+export interface UserUpdate {
+  name: string;
+  password?: string;
+}
+
 export interface Role {
   id: number;
   name: string;
@@ -177,11 +190,11 @@ export const authApi = {
         api<unknown>(`/api/operators/restore/${id}`, { method: 'DELETE' }),
     users: () => api<PresentationUser[]>('/api/users'),
     createUser: (name: string, password: string) =>
-        api<unknown>('/api/users', {
+        api<User>('/api/users', {
             method: 'POST',
             body: JSON.stringify({ name, password }),
         }),
-    updateUser: (id: number, user: { name: string; password?: string }) =>
+    updateUser: (id: number, user: UserUpdate) =>
         api<unknown>(`/api/users/${id}`, {
             method: 'PUT',
             body: JSON.stringify(user),

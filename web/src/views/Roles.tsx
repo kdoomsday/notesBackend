@@ -36,12 +36,12 @@ export default function Roles({ me, onLogout }: RolesProps) {
       .then(setRoles)
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setRoles([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('roles.title') }));
       });
-  }, [onLogout, t]);
+  }, [t]);
 
   useEffect(() => {
     if (!showForm && !managingRole) return;

@@ -36,12 +36,12 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
       .then(setCategories)
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setCategories([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('categories.title') }));
       });
-  }, [onLogout, t]);
+  }, [t]);
 
   useEffect(() => {
     if (!showForm && !toDelete) return;

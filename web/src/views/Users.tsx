@@ -37,12 +37,12 @@ export default function Users({ me, onLogout }: UsersProps) {
       .then(setUsers)
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setUsers([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('users.title') }));
       });
-  }, [onLogout, t]);
+  }, [t]);
 
   useEffect(() => {
     authApi
@@ -123,9 +123,9 @@ export default function Users({ me, onLogout }: UsersProps) {
           setSubmitting(false);
           return;
         }
-        await authApi.createUser(name, pw);
+        const created = await authApi.createUser(name, pw);
         setUsers((prev) =>
-          prev ? [...prev, { id: 0, name, deleted: false }] : [{ id: 0, name, deleted: false }]
+          prev ? [...prev, created] : [created]
         );
       }
       setShowForm(false);

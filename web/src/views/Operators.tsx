@@ -30,12 +30,12 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
       .then(setOperators)
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setOperators([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('operators.title') }));
       });
-  }, [onLogout, t]);
+  }, [t]);
 
   useEffect(() => {
     if (!showCreate && !toDelete) return;
