@@ -123,9 +123,9 @@ export default function Users({ me, onLogout }: UsersProps) {
           setSubmitting(false);
           return;
         }
-        await authApi.createUser(name, pw);
+        const created = await authApi.createUser(name, pw);
         setUsers((prev) =>
-          prev ? [...prev, { id: 0, name, deleted: false }] : [{ id: 0, name, deleted: false }]
+          prev ? [...prev, created] : [created]
         );
       }
       setShowForm(false);
