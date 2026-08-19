@@ -40,6 +40,16 @@ function todayString(): string {
   return `${now.getFullYear()}-${month}-${day}`;
 }
 
+function shiftComparer(timeBlocks: TimeBlock[], dateDirection: 1 | -1) {
+  return (a: Shift, b: Shift): number => {
+    const byDate = dateDirection * a.date.localeCompare(b.date);
+    if (byDate !== 0) return byDate; // Dates are different, this wins
+    const aStart = timeBlocks.find((tb) => tb.id === a.timeBlockId)?.startTime ?? '';
+    const bStart = timeBlocks.find((tb) => tb.id === b.timeBlockId)?.startTime ?? '';
+    return aStart.localeCompare(bStart);
+  };
+}
+
 export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelectShift, onLogout }: ShiftsProps) {
   const { t, i18n } = useTranslation();
   const [shifts, setShifts] = useState<Shift[] | null>(null);
@@ -108,13 +118,7 @@ export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelect
 
   const patientShifts = (shifts ?? [])
     .filter((s) => s.patientId === patient.id)
-    .sort((a, b) => {
-      const byDate = b.date.localeCompare(a.date);
-      if (byDate !== 0) return byDate;
-      const aStart = timeBlocks.find((tb) => tb.id === a.timeBlockId)?.startTime ?? '';
-      const bStart = timeBlocks.find((tb) => tb.id === b.timeBlockId)?.startTime ?? '';
-      return aStart.localeCompare(bStart);
-    });
+    .sort(shiftComparer(timeBlocks, -1));
 
   const byDate = new Map<string, Shift[]>();
   for (const shift of patientShifts) {
@@ -122,6 +126,8 @@ export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelect
     list.push(shift);
     byDate.set(shift.date, list);
   }
+
+  const orderedShifts = [...patientShifts].sort(shiftComparer(timeBlocks, 1));
 
   function openDelete() {
     setDeleteError('');
@@ -205,7 +211,7 @@ export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelect
                       key={shift.id}
                       className={`shift-card${isCurrent ? ' shift-card-current' : ''}`}
                       title={t('shifts.viewNotes', { block: block?.name ?? t('common.shift') })}
-                      onClick={() => onSelectShift(shift, patientShifts)}
+                      onClick={() => onSelectShift(shift, orderedShifts)}
                     >
                       <span className="shift-block">{block?.name ?? t('common.shift')}</span>
                       <span className="shift-time">
