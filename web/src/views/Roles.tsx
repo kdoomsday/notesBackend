@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import {
   ApiError,
   authApi,
-  PERMISSION_TYPES,
   type Me,
+  type PresentationPermission,
   type Role,
 } from '../api/client';
 import { serverErrorMessage } from '../i18n';
@@ -24,10 +24,11 @@ export default function Roles({ me, onLogout }: RolesProps) {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [managingRole, setManagingRole] = useState<Role | null>(null);
-  const [rolePermissions, setRolePermissions] = useState<Set<string>>(new Set());
+  const [allPermissions, setAllPermissions] = useState<PresentationPermission[]>([]);
+  const [rolePermissions, setRolePermissions] = useState<Set<number>>(new Set());
   const [permissionsLoading, setPermissionsLoading] = useState(false);
   const [permissionsError, setPermissionsError] = useState('');
-  const [togglingPerm, setTogglingPerm] = useState<string | null>(null);
+  const [togglingPerm, setTogglingPerm] = useState<number | null>(null);
 
   useEffect(() => {
     authApi
@@ -86,8 +87,13 @@ export default function Roles({ me, onLogout }: RolesProps) {
     setRolePermissions(new Set());
     setPermissionsLoading(true);
     try {
-      const perms = await authApi.rolePermissions(role.id);
-      setRolePermissions(new Set(perms.map((p) => p.type)));
+      const [allPerms, rolePerms] = await Promise.all([
+        authApi.permissions(),
+        authApi.rolePermissions(role.id),
+      ]);
+      setAllPermissions(allPerms);
+      const rolePermIds = new Set(rolePerms.map((p) => p.id));
+      setRolePermissions(rolePermIds);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         onLogout();
@@ -102,23 +108,23 @@ export default function Roles({ me, onLogout }: RolesProps) {
   async function toggleAllPermissions(select: boolean) {
     if (!managingRole || togglingPerm !== null) return;
     setPermissionsError('');
-    setTogglingPerm('*');
-    const targets = PERMISSION_TYPES.filter((p) =>
-      select ? !rolePermissions.has(p) : rolePermissions.has(p)
+    setTogglingPerm(-1);
+    const targets = allPermissions.filter((p) =>
+      select ? !rolePermissions.has(p.id) : rolePermissions.has(p.id)
     );
     try {
       await Promise.all(
         targets.map((p) =>
           select
-            ? authApi.addRolePermission(managingRole.id, p)
-            : authApi.removeRolePermission(managingRole.id, p)
+            ? authApi.addRolePermission(managingRole.id, p.id)
+            : authApi.removeRolePermission(managingRole.id, p.id)
         )
       );
       setRolePermissions((prev) => {
         const next = new Set(prev);
         for (const p of targets) {
-          if (select) next.add(p);
-          else next.delete(p);
+          if (select) next.add(p.id);
+          else next.delete(p.id);
         }
         return next;
       });
@@ -129,21 +135,21 @@ export default function Roles({ me, onLogout }: RolesProps) {
     }
   }
 
-  async function togglePermission(permType: string) {
+  async function togglePermission(permissionId: number) {
     if (!managingRole || togglingPerm !== null) return;
     setPermissionsError('');
-    setTogglingPerm(permType);
-    const had = rolePermissions.has(permType);
+    setTogglingPerm(permissionId);
+    const had = rolePermissions.has(permissionId);
     try {
       if (had) {
-        await authApi.removeRolePermission(managingRole.id, permType);
+        await authApi.removeRolePermission(managingRole.id, permissionId);
       } else {
-        await authApi.addRolePermission(managingRole.id, permType);
+        await authApi.addRolePermission(managingRole.id, permissionId);
       }
       setRolePermissions((prev) => {
         const next = new Set(prev);
-        if (had) next.delete(permType);
-        else next.add(permType);
+        if (had) next.delete(permissionId);
+        else next.add(permissionId);
         return next;
       });
     } catch (err) {
@@ -318,16 +324,16 @@ export default function Roles({ me, onLogout }: RolesProps) {
                     </button>
                   </div>
                   <ul className="permission-list">
-                    {PERMISSION_TYPES.map((permType) => (
-                      <li key={permType} className="permission-item">
+                    {allPermissions.map((perm) => (
+                      <li key={perm.id} className="permission-item">
                         <label className="permission-label">
                           <input
                             type="checkbox"
-                            checked={rolePermissions.has(permType)}
-                            disabled={togglingPerm === permType}
-                            onChange={() => togglePermission(permType)}
+                            checked={rolePermissions.has(perm.id)}
+                            disabled={togglingPerm === perm.id}
+                            onChange={() => togglePermission(perm.id)}
                           />
-                          <span className="permission-name">{permType}</span>
+                          <span className="permission-name">{perm.name}</span>
                         </label>
                       </li>
                     ))}
