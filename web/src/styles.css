@@ -517,6 +517,20 @@ img.login-logo {
   flex-shrink: 0;
 }
 
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-weight: 600;
+  font-size: 12px;
+  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+}
+
 /* ---- Modal ---- */
 
 .modal-backdrop {

@@ -143,7 +143,15 @@
     "deletedCount_other": "{{count}} deleted users",
     "deletedTag": "Deleted",
     "restore": "Restore user",
-    "restoreFailed": "Could not restore user"
+    "restoreFailed": "Could not restore user",
+    "role": "Role",
+    "noRole": "No role",
+    "noRolesAvailable": "No roles available",
+    "assignRole": "Assign role",
+    "assignRoleTitle": "Assign a role to {{name}}",
+    "assign": "Assign",
+    "assigning": "Assigning…",
+    "assignRoleFailed": "Could not assign role"
   },
   "roles": {
     "title": "Roles",

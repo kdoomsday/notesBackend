@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ApiError, authApi, type Me, type PresentationUser } from '../api/client';
+import { ApiError, authApi, type Me, type PresentationUser, type Role } from '../api/client';
 import { serverErrorMessage } from '../i18n';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -24,6 +24,12 @@ export default function Users({ me, onLogout }: UsersProps) {
   const [deleteError, setDeleteError] = useState('');
   const [restoringId, setRestoringId] = useState<number | null>(null);
   const [restoreError, setRestoreError] = useState('');
+  const [roles, setRoles] = useState<Role[] | null>(null);
+  const [roleByUser, setRoleByUser] = useState<Record<number, Role | null>>({});
+  const [assigningUser, setAssigningUser] = useState<PresentationUser | null>(null);
+  const [assignRoleId, setAssignRoleId] = useState<number | null>(null);
+  const [assigning, setAssigning] = useState(false);
+  const [assignError, setAssignError] = useState('');
 
   useEffect(() => {
     authApi
@@ -39,16 +45,45 @@ export default function Users({ me, onLogout }: UsersProps) {
   }, [onLogout, t]);
 
   useEffect(() => {
-    if (!showForm && !toDelete) return;
+    authApi
+      .roles()
+      .then((data) => setRoles(data.filter((r) => !r.deleted)))
+      .catch(() => setRoles([]));
+  }, []);
+
+  useEffect(() => {
+    if (!users) return;
+    let cancelled = false;
+    Promise.all(
+      users.map(async (user) => {
+        try {
+          const role = await authApi.userRole(user.id);
+          return [user.id, role] as const;
+        } catch {
+          return [user.id, null] as const;
+        }
+      })
+    ).then((pairs) => {
+      if (cancelled) return;
+      setRoleByUser(Object.fromEntries(pairs));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [users]);
+
+  useEffect(() => {
+    if (!showForm && !toDelete && !assigningUser) return;
     function onKeyDown(event: KeyboardEvent) {
       if (event.key !== 'Escape') return;
       setShowForm(false);
       setEditing(null);
       setToDelete(null);
+      setAssigningUser(null);
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showForm, toDelete]);
+  }, [showForm, toDelete, assigningUser]);
 
   function openCreate() {
     setEditing(null);
@@ -135,6 +170,33 @@ export default function Users({ me, onLogout }: UsersProps) {
     }
   }
 
+  function openAssign(user: PresentationUser) {
+    setAssignError('');
+    setAssignRoleId(roleByUser[user.id]?.id ?? null);
+    setAssigningUser(user);
+  }
+
+  async function handleAssign(event: FormEvent) {
+    event.preventDefault();
+    if (!assigningUser || assignRoleId === null || assigning) return;
+    setAssignError('');
+    setAssigning(true);
+    try {
+      await authApi.assignUserRole(assigningUser.id, assignRoleId);
+      const role = roles?.find((r) => r.id === assignRoleId) ?? null;
+      setRoleByUser((prev) => ({ ...prev, [assigningUser.id]: role }));
+      setAssigningUser(null);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        onLogout();
+        return;
+      }
+      setAssignError(serverErrorMessage(err) || t('users.assignRoleFailed'));
+    } finally {
+      setAssigning(false);
+    }
+  }
+
   async function handleLogout() {
     try {
       await authApi.logout();
@@ -190,6 +252,35 @@ export default function Users({ me, onLogout }: UsersProps) {
             {active.map((user) => (
               <li key={user.id} className="operator-item">
                 <span className="operator-name">{user.name}</span>
+                <span
+                  className="role-badge"
+                  title={t('users.role')}
+                  onClick={() => openAssign(user)}
+                >
+                  {roleByUser[user.id]?.name ?? t('users.noRole')}
+                </span>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  title={t('users.assignRole')}
+                  aria-label={t('users.assignRole')}
+                  onClick={() => openAssign(user)}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                </button>
                 <button
                   type="button"
                   className="icon-btn"
@@ -403,6 +494,62 @@ export default function Users({ me, onLogout }: UsersProps) {
                   {deleting ? t('users.deleting') : t('users.delete')}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+      {assigningUser && (
+          <div className="modal-backdrop" onClick={() => setAssigningUser(null)}>
+            <div
+              className="modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="assign-role-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h3 id="assign-role-title" className="modal-title">
+                {t('users.assignRoleTitle', { name: assigningUser.name })}
+              </h3>
+              <form onSubmit={handleAssign}>
+                <label className="field">
+                  <span>{t('users.role')}</span>
+                  <select
+                    value={assignRoleId ?? ''}
+                    onChange={(e) =>
+                      setAssignRoleId(e.target.value ? Number(e.target.value) : null)
+                    }
+                    disabled={assigning || !roles || roles.length === 0}
+                    required
+                    autoFocus
+                  >
+                    {(!roles || roles.length === 0) && (
+                      <option value="">{t('users.noRolesAvailable')}</option>
+                    )}
+                    {roles?.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {assignError && <p className="error modal-error">{assignError}</p>}
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setAssigningUser(null)}
+                    disabled={assigning}
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={assigning || assignRoleId === null || !roles || roles.length === 0}
+                  >
+                    {assigning ? t('users.assigning') : t('users.assign')}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

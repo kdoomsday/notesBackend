@@ -143,7 +143,15 @@
     "deletedCount_other": "{{count}} usuarios eliminados",
     "deletedTag": "Eliminado",
     "restore": "Restaurar usuario",
-    "restoreFailed": "No se pudo restaurar el usuario"
+    "restoreFailed": "No se pudo restaurar el usuario",
+    "role": "Rol",
+    "noRole": "Sin rol",
+    "noRolesAvailable": "No hay roles disponibles",
+    "assignRole": "Asignar rol",
+    "assignRoleTitle": "Asignar un rol a {{name}}",
+    "assign": "Asignar",
+    "assigning": "Asignando…",
+    "assignRoleFailed": "No se pudo asignar el rol"
   },
   "roles": {
     "title": "Roles",

@@ -238,6 +238,9 @@ export const authApi = {
         }),
     toggleDeleteUser: (id: number) =>
         api<unknown>(`/api/users/${id}`, { method: 'DELETE' }),
+    userRole: (userId: number) => api<Role | null>(`/api/roles/user/${userId}`),
+    assignUserRole: (userId: number, roleId: number) =>
+        api<unknown>(`/api/roles/${roleId}/users/${userId}`, { method: 'PUT' }),
     roles: () => api<Role[]>('/api/roles'),
     createRole: (name: string) =>
         api<Role>('/api/roles', { method: 'POST', body: JSON.stringify({ name }) }),
