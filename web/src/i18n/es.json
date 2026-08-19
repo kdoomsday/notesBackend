@@ -2,6 +2,9 @@
   "app": {
     "title": "Notas"
   },
+  "default": {
+    "noAccess": "No tienes acceso a ninguna sección. Contacta con un administrador."
+  },
   "common": {
     "shift": "Turno",
     "loading": "Cargando…",

@@ -2,6 +2,9 @@
   "app": {
     "title": "Notes"
   },
+  "default": {
+    "noAccess": "You don't have access to any section. Contact an administrator."
+  },
   "common": {
     "shift": "Shift",
     "loading": "Loading…",

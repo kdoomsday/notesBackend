@@ -209,9 +209,16 @@ export const authApi = {
         api<Role>('/api/roles', { method: 'POST', body: JSON.stringify({ name }) }),
     rolePermissions: (roleId: number) =>
         api<RolePermission[]>(`/api/roles/${roleId}/permissions`),
+    permissionsOfCurrentUser: () =>
+        api<RolePermission[]>('/api/roles/user-permissions'),
     addRolePermission: (roleId: number, permissionId: number) =>
         api<unknown>(`/api/roles/${roleId}/permissions/${permissionId}`, { method: 'PUT' }),
     removeRolePermission: (roleId: number, permissionId: number) =>
         api<unknown>(`/api/roles/${roleId}/permissions/${permissionId}`, { method: 'DELETE' }),
     permissions: () => api<PresentationPermission[]>('/api/permissions'),
 };
+
+export async function myPermissions(): Promise<Set<string>> {
+  const perms = await authApi.permissionsOfCurrentUser();
+  return new Set(perms.map((p) => p.name));
+}

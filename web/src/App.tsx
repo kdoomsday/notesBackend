@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { authApi, type Me, type Patient, type Shift } from './api/client';
+import { authApi, myPermissions, type Me, type Patient, type Shift } from './api/client';
 import { useToast } from './components/Toast';
 import { getLogoUrl, subscribeLogo } from './config';
 import Login from './views/Login';
@@ -11,8 +11,17 @@ import Categories from './views/Categories';
 import Operators from './views/Operators';
 import Users from './views/Users';
 import Roles from './views/Roles';
+import LanguageSwitcher from './components/LanguageSwitcher';
 
 type Section = 'patients' | 'categories' | 'operators' | 'users' | 'roles';
+
+const SECTION_PERMISSION: Record<Section, string> = {
+  patients: 'List Patients',
+  categories: 'List Categories',
+  operators: 'List Operators',
+  users: 'List Users',
+  roles: 'List Roles',
+};
 
 function NavIcon({ name }: { name: 'patients' | 'categories' | 'operators' | 'users' | 'roles' }) {
   if (name === 'patients') {
@@ -58,12 +67,51 @@ function NavIcon({ name }: { name: 'patients' | 'categories' | 'operators' | 'us
   );
 }
 
+interface DefaultScreenProps {
+  me: Me;
+  onLogout: () => void;
+}
+
+function DefaultScreen({ me, onLogout }: DefaultScreenProps) {
+  const { t } = useTranslation();
+  async function handleLogout() {
+    try {
+      await authApi.logout();
+    } catch {
+      // Session is cleared client-side regardless.
+    }
+    onLogout();
+  }
+  return (
+    <div className="view">
+      <header className="app-header">
+        <div className="app-header-inner">
+          <div className="breadcrumb">
+            <span className="breadcrumb-current">{t('app.title')}</span>
+          </div>
+          <div className="user-area">
+            <LanguageSwitcher />
+            <span className="user-name">{me.name}</span>
+            <button type="button" className="btn btn-ghost" onClick={handleLogout}>
+              {t('nav.logOut')}
+            </button>
+          </div>
+        </div>
+      </header>
+      <main className="app-main">
+        <p className="empty-state">{t('default.noAccess')}</p>
+      </main>
+    </div>
+  );
+}
+
 export default function App() {
   const { t } = useTranslation();
   const notify = useToast();
   const logoUrl = useSyncExternalStore(subscribeLogo, getLogoUrl);
   const [me, setMe] = useState<Me | null>(null);
   const [checking, setChecking] = useState(true);
+  const [permissions, setPermissions] = useState<Set<string> | null>(null);
   const [section, setSection] = useState<Section>('patients');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
@@ -101,6 +149,31 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!me) {
+      setPermissions(null);
+      setSection('patients');
+      return;
+    }
+    let cancelled = false;
+    myPermissions()
+      .then((perms) => {
+        if (cancelled) return;
+        setPermissions(perms);
+        const available = (Object.keys(SECTION_PERMISSION) as Section[]).find(
+          (sec) => perms.has(SECTION_PERMISSION[sec])
+        );
+        if (available) setSection(available);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPermissions(new Set());
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [me]);
+
+  useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== 'Escape') return;
       const el = document.activeElement;
@@ -118,6 +191,9 @@ export default function App() {
   if (checking) return null;
 
   if (!me) return <Login onLogin={setMe} />;
+
+  const hasSection = (sec: Section) =>
+    permissions === null || permissions.has(SECTION_PERMISSION[sec]);
 
   let content: ReactNode;
   if (selectedPatient && selectedShift) {
@@ -154,16 +230,18 @@ export default function App() {
         onLogout={handleLogout}
       />
     );
-  } else if (section === 'categories') {
+  } else if (section === 'categories' && hasSection('categories')) {
     content = <Categories me={me} onLogout={handleLogout} />;
-  } else if (section === 'operators') {
+  } else if (section === 'operators' && hasSection('operators')) {
     content = <Operators me={me} onLogout={handleLogout} />;
-  } else if (section === 'users') {
+  } else if (section === 'users' && hasSection('users')) {
     content = <Users me={me} onLogout={handleLogout} />;
-  } else if (section === 'roles') {
+  } else if (section === 'roles' && hasSection('roles')) {
     content = <Roles me={me} onLogout={handleLogout} />;
-  } else {
+  } else if (section === 'patients' && hasSection('patients')) {
     content = <Patients me={me} onLogout={handleLogout} onSelectPatient={setSelectedPatient} />;
+  } else {
+    content = <DefaultScreen me={me} onLogout={handleLogout} />;
   }
 
   return (
@@ -173,46 +251,19 @@ export default function App() {
           {logoUrl ? <img className="sidebar-logo" src={logoUrl} alt="" /> : t('app.title')}
         </div>
         <nav className="sidebar-nav">
-          <button
-            type="button"
-            className={`sidebar-link${section === 'patients' ? ' sidebar-link-active' : ''}`}
-            onClick={() => goToSection('patients')}
-          >
-            <NavIcon name="patients" />
-            {t('nav.patients')}
-          </button>
-          <button
-            type="button"
-            className={`sidebar-link${section === 'categories' ? ' sidebar-link-active' : ''}`}
-            onClick={() => goToSection('categories')}
-          >
-            <NavIcon name="categories" />
-            {t('nav.categories')}
-          </button>
-          <button
-            type="button"
-            className={`sidebar-link${section === 'operators' ? ' sidebar-link-active' : ''}`}
-            onClick={() => goToSection('operators')}
-          >
-            <NavIcon name="operators" />
-            {t('nav.operators')}
-          </button>
-          <button
-            type="button"
-            className={`sidebar-link${section === 'users' ? ' sidebar-link-active' : ''}`}
-            onClick={() => goToSection('users')}
-          >
-            <NavIcon name="users" />
-            {t('nav.users')}
-          </button>
-          <button
-            type="button"
-            className={`sidebar-link${section === 'roles' ? ' sidebar-link-active' : ''}`}
-            onClick={() => goToSection('roles')}
-          >
-            <NavIcon name="roles" />
-            {t('nav.roles')}
-          </button>
+          {(Object.keys(SECTION_PERMISSION) as Section[]).map((sec) =>
+            hasSection(sec) ? (
+              <button
+                key={sec}
+                type="button"
+                className={`sidebar-link${section === sec ? ' sidebar-link-active' : ''}`}
+                onClick={() => goToSection(sec)}
+              >
+                <NavIcon name={sec} />
+                {t(`nav.${sec}`)}
+              </button>
+            ) : null
+          )}
         </nav>
       </aside>
       <div className="app-content">{content}</div>
