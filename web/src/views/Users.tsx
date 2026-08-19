@@ -509,28 +509,33 @@ export default function Users({ me, onLogout }: UsersProps) {
               <h3 id="assign-role-title" className="modal-title">
                 {t('users.assignRoleTitle', { name: assigningUser.name })}
               </h3>
-              <form onSubmit={handleAssign}>
-                <label className="field">
-                  <span>{t('users.role')}</span>
-                  <select
-                    value={assignRoleId ?? ''}
-                    onChange={(e) =>
-                      setAssignRoleId(e.target.value ? Number(e.target.value) : null)
-                    }
-                    disabled={assigning || !roles || roles.length === 0}
-                    required
-                    autoFocus
-                  >
-                    {(!roles || roles.length === 0) && (
-                      <option value="">{t('users.noRolesAvailable')}</option>
-                    )}
-                    {roles?.map((role) => (
-                      <option key={role.id} value={role.id}>
-                        {role.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+              <form onSubmit={handleAssign} className="role-assign-form">
+                {!roles || roles.length === 0 ? (
+                  <p className="empty-state">{t('users.noRolesAvailable')}</p>
+                ) : (
+                  <ul className="role-card-list">
+                    {roles.map((role) => {
+                      const selected = assignRoleId === role.id;
+                      return (
+                        <li key={role.id} className="role-card-item">
+                          <label
+                            className={`role-card${selected ? ' role-card-selected' : ''}`}
+                          >
+                            <input
+                              type="radio"
+                              name="role"
+                              value={role.id}
+                              checked={selected}
+                              disabled={assigning}
+                              onChange={() => setAssignRoleId(role.id)}
+                            />
+                            <span className="role-card-name">{role.name}</span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
                 {assignError && <p className="error modal-error">{assignError}</p>}
                 <div className="modal-actions">
                   <button
@@ -544,7 +549,7 @@ export default function Users({ me, onLogout }: UsersProps) {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={assigning || assignRoleId === null || !roles || roles.length === 0}
+                    disabled={assigning || assignRoleId === null}
                   >
                     {assigning ? t('users.assigning') : t('users.assign')}
                   </button>

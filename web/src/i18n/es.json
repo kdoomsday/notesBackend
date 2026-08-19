@@ -168,7 +168,9 @@
     "managePermissions": "Gestionar permisos",
     "permissionsTitle": "Permisos — {{name}}",
     "loadPermissionsFailed": "No se pudieron cargar los permisos",
-    "permissionUpdateFailed": "No se pudo actualizar el permiso"
+    "permissionUpdateFailed": "No se pudo actualizar el permiso",
+    "selectAll": "Seleccionar todos",
+    "deselectAll": "Deseleccionar todos"
   },
   "shifts": {
     "title": "Turnos",

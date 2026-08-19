@@ -168,7 +168,9 @@
     "managePermissions": "Manage permissions",
     "permissionsTitle": "Permissions — {{name}}",
     "loadPermissionsFailed": "Could not load permissions",
-    "permissionUpdateFailed": "Could not update permission"
+    "permissionUpdateFailed": "Could not update permission",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all"
   },
   "shifts": {
     "title": "Shifts",

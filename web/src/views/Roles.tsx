@@ -99,6 +99,36 @@ export default function Roles({ me, onLogout }: RolesProps) {
     }
   }
 
+  async function toggleAllPermissions(select: boolean) {
+    if (!managingRole || togglingPerm !== null) return;
+    setPermissionsError('');
+    setTogglingPerm('*');
+    const targets = PERMISSION_TYPES.filter((p) =>
+      select ? !rolePermissions.has(p) : rolePermissions.has(p)
+    );
+    try {
+      await Promise.all(
+        targets.map((p) =>
+          select
+            ? authApi.addRolePermission(managingRole.id, p)
+            : authApi.removeRolePermission(managingRole.id, p)
+        )
+      );
+      setRolePermissions((prev) => {
+        const next = new Set(prev);
+        for (const p of targets) {
+          if (select) next.add(p);
+          else next.delete(p);
+        }
+        return next;
+      });
+    } catch (err) {
+      setPermissionsError(serverErrorMessage(err) || t('roles.permissionUpdateFailed'));
+    } finally {
+      setTogglingPerm(null);
+    }
+  }
+
   async function togglePermission(permType: string) {
     if (!managingRole || togglingPerm !== null) return;
     setPermissionsError('');
@@ -269,6 +299,24 @@ export default function Roles({ me, onLogout }: RolesProps) {
               ) : (
                 <>
                   {permissionsError && <p className="error modal-error">{permissionsError}</p>}
+                  <div className="permission-tools">
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      disabled={togglingPerm !== null}
+                      onClick={() => toggleAllPermissions(true)}
+                    >
+                      {t('roles.selectAll')}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      disabled={togglingPerm !== null}
+                      onClick={() => toggleAllPermissions(false)}
+                    >
+                      {t('roles.deselectAll')}
+                    </button>
+                  </div>
                   <ul className="permission-list">
                     {PERMISSION_TYPES.map((permType) => (
                       <li key={permType} className="permission-item">
