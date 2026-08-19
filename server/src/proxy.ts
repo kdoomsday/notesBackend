@@ -53,8 +53,12 @@ export function proxyToNotes(
       responseHeaders[key] = value;
     }
     if (proxyRes.statusCode === 401 && session) {
-      deleteSession(session.sessionToken);
-      responseHeaders['set-cookie'] = 'session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0';
+      const url = request.url.split('?')[0];
+      const isAuthCheck = url === '/api/auth/me' || url === '/api/auth/login';
+      if (isAuthCheck) {
+        deleteSession(session.sessionToken);
+        responseHeaders['set-cookie'] = 'session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0';
+      }
     }
     reply.raw.writeHead(proxyRes.statusCode ?? 502, responseHeaders);
     proxyRes.pipe(reply.raw);
