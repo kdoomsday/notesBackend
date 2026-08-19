@@ -89,7 +89,7 @@ export default function CategoryValuesModal({
       .catch((err: unknown) => {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setCategories([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('notes.values') }));
@@ -102,7 +102,7 @@ export default function CategoryValuesModal({
       cancelled = true;
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [onClose, onLogout, t]);
+  }, [onClose, t]);
 
   useEffect(() => {
     if (!selected) return;
@@ -118,7 +118,7 @@ export default function CategoryValuesModal({
       .catch((err: unknown) => {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setValues([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('notes.values') }));
@@ -126,7 +126,7 @@ export default function CategoryValuesModal({
     return () => {
       cancelled = true;
     };
-  }, [patientId, selected, amount, onLogout, t]);
+  }, [patientId, selected, amount, t]);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>

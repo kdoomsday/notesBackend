@@ -37,12 +37,12 @@ export default function Users({ me, onLogout }: UsersProps) {
       .then(setUsers)
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setUsers([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('users.title') }));
       });
-  }, [onLogout, t]);
+  }, [t]);
 
   useEffect(() => {
     authApi

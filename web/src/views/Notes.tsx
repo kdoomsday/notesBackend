@@ -112,7 +112,9 @@ export default function Notes({
       })
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
-          onLogout();
+          setNotes([]);
+          setTimeBlocks([]);
+          setOperators([]);
           return;
         }
         setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('notes.title') }));
@@ -122,7 +124,7 @@ export default function Notes({
       cancelled = true;
       source?.close();
     };
-  }, [onLogout, shift.id, t]);
+  }, [shift.id, t]);
 
   async function handleLogout() {
     try {
