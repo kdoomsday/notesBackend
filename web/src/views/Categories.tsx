@@ -2,15 +2,17 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, authApi, type Category, type Me } from '../api/client';
 import { serverErrorMessage } from '../i18n';
-import CategoryIcon from '../components/CategoryIcon';
+import CategoryIcon, {
+  DEFAULT_CATEGORY_ICON_NAME,
+  resolveCategoryIconName,
+} from '../components/CategoryIcon';
+import IconPicker from '../components/IconPicker';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 interface CategoriesProps {
   me: Me;
   onLogout: () => void;
 }
-
-const ICON_NAMES = ['Scale', 'Pulse', 'Temperature', 'Heart', 'Clipboard', 'Document'];
 
 export default function Categories({ me, onLogout }: CategoriesProps) {
   const { t } = useTranslation();
@@ -19,7 +21,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [formName, setFormName] = useState('');
-  const [formIcon, setFormIcon] = useState('Document');
+  const [formIcon, setFormIcon] = useState(DEFAULT_CATEGORY_ICON_NAME);
   const [formType, setFormType] = useState<'Numeric' | 'Text'>('Numeric');
   const [formFixedText, setFormFixedText] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -58,7 +60,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
   function openCreate() {
     setEditing(null);
     setFormName('');
-    setFormIcon('Document');
+    setFormIcon(DEFAULT_CATEGORY_ICON_NAME);
     setFormType('Numeric');
     setFormFixedText('');
     setFormError('');
@@ -68,7 +70,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
   function openEdit(cat: Category) {
     setEditing(cat);
     setFormName(cat.name);
-    setFormIcon(cat.iconName);
+    setFormIcon(resolveCategoryIconName(cat.iconName));
     setFormType(cat.categoryType.type);
     setFormFixedText(cat.fixedText ?? '');
     setFormError('');
@@ -356,20 +358,11 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                 </label>
                 <label className="field">
                   <span>{t('categories.iconName')}</span>
-                  <input
-                    type="text"
+                  <IconPicker
                     value={formIcon}
-                    onChange={(e) => setFormIcon(e.target.value)}
-                    placeholder={t('categories.iconNamePlaceholder')}
-                    list="category-icons"
+                    onChange={setFormIcon}
                     disabled={submitting}
-                    required
                   />
-                  <datalist id="category-icons">
-                    {ICON_NAMES.map((name) => (
-                      <option key={name} value={name} />
-                    ))}
-                  </datalist>
                 </label>
                 <label className="field">
                   <span>{t('categories.categoryType')}</span>

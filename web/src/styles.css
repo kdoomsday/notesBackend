@@ -216,6 +216,112 @@ img.login-logo {
   box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
+/* ---- Icon picker ---- */
+
+.icon-picker {
+  position: relative;
+}
+
+.icon-picker-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  background: #fbfcfe;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.icon-picker-trigger:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.icon-picker-trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.icon-picker-label {
+  flex: 1;
+  text-align: left;
+  color: var(--text);
+}
+
+.icon-picker-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.icon-picker-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.icon-picker-search {
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  background: #fbfcfe;
+}
+
+.icon-picker-search:focus {
+  outline: none;
+}
+
+.icon-picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.icon-picker-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font-size: 14px;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.icon-picker-option.active {
+  background: var(--accent-soft);
+}
+
+.icon-picker-option.selected {
+  font-weight: 600;
+}
+
+.icon-picker-empty {
+  margin: 0;
+  padding: 12px 10px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
 /* ---- Buttons ---- */
 
 .btn {
