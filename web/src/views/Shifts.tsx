@@ -186,8 +186,8 @@ export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelect
         <BackLink label={t('shifts.backToPatients')} onClick={onBack} />
         <div className="section-head section-head-row">
           <div>
-            <h2>{t('shifts.title')}</h2>
-            <p className="section-subtitle">{t('shifts.count', { count: patientShifts.length })}</p>
+            <h2>{patient.name}</h2>
+            <p className="section-subtitle">{t('shifts.title')} · {t('shifts.count', { count: patientShifts.length })}</p>
           </div>
           <button type="button" className="btn btn-danger" onClick={openDelete}>
             {t('patients.delete')}
