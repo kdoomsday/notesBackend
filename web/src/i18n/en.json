@@ -75,7 +75,17 @@
     "deletedCount_other": "{{count}} deleted operators",
     "deletedTag": "Deleted",
     "restore": "Restore operator",
-    "restoreFailed": "Could not restore operator"
+    "restoreFailed": "Could not restore operator",
+    "changePin": "Change PIN",
+    "changePinTitle": "Change PIN — {{name}}",
+    "oldPin": "Current PIN",
+    "oldPinPlaceholder": "Current PIN",
+    "newPin": "New PIN",
+    "newPinPlaceholder": "e.g. 1234",
+    "changingPin": "Changing…",
+    "changePinSuccess": "PIN changed successfully",
+    "changePinFailed": "Could not change PIN",
+    "wrongPin": "The current PIN is incorrect"
   },
   "categories": {
     "title": "Categories",

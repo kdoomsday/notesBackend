@@ -23,6 +23,11 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
   const [deleteError, setDeleteError] = useState('');
   const [restoringId, setRestoringId] = useState<number | null>(null);
   const [restoreError, setRestoreError] = useState('');
+  const [toChangePin, setToChangePin] = useState<Operator | null>(null);
+  const [oldPin, setOldPin] = useState('');
+  const [newPinValue, setNewPinValue] = useState('');
+  const [changingPin, setChangingPin] = useState(false);
+  const [changePinError, setChangePinError] = useState('');
 
   useEffect(() => {
     authApi
@@ -38,15 +43,16 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
   }, [t]);
 
   useEffect(() => {
-    if (!showCreate && !toDelete) return;
+    if (!showCreate && !toDelete && !toChangePin) return;
     function onKeyDown(event: KeyboardEvent) {
       if (event.key !== 'Escape') return;
       setShowCreate(false);
       setToDelete(null);
+      setToChangePin(null);
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showCreate, toDelete]);
+  }, [showCreate, toDelete, toChangePin]);
 
   function openCreate() {
     setNewName('');
@@ -137,6 +143,39 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
     }
   }
 
+  function openChangePin(operator: Operator) {
+    setOldPin('');
+    setNewPinValue('');
+    setChangePinError('');
+    setToChangePin(operator);
+  }
+
+  async function handleChangePin(event: FormEvent) {
+    event.preventDefault();
+    if (!toChangePin || changingPin) return;
+    const opOld = oldPin.trim();
+    const opNew = newPinValue.trim();
+    if (!opOld || !opNew) return;
+    setChangePinError('');
+    setChangingPin(true);
+    try {
+      await authApi.changePin(toChangePin.id, opOld, opNew);
+      setToChangePin(null);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        onLogout();
+        return;
+      }
+      if (err instanceof ApiError && (err.status === 400 || err.status === 404)) {
+        setChangePinError(t('operators.wrongPin'));
+        return;
+      }
+      setChangePinError(serverErrorMessage(err) || t('operators.changePinFailed'));
+    } finally {
+      setChangingPin(false);
+    }
+  }
+
   return (
     <div className="view">
       <header className="app-header">
@@ -179,6 +218,32 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
             {active.map((operator) => (
               <li key={operator.id} className="operator-item">
                 <span className="operator-name">{operator.name}</span>
+                <button
+                  type="button"
+                  className="icon-btn icon-btn-accent"
+                  title={t('operators.changePin')}
+                  aria-label={t('operators.changePin') + ' — ' + operator.name}
+                  onClick={() => openChangePin(operator)}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="11" r="1" />
+                    <path d="M11 17a1 1 0 0 1-1 1 1 1 0 0 1-1-1 1 1 0 0 1 1-1 1 1 0 0 1 1 1z" />
+                    <path d="M20 11a2 2 0 0 0-2-2h-1a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h1" />
+                    <path d="M15 7V4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v3" />
+                    <path d="M7 11v1a2 2 0 0 0 2 2h1" />
+                    <path d="M9 17H6a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2h1" />
+                  </svg>
+                </button>
                 <button
                   type="button"
                   className="icon-btn icon-btn-danger"
@@ -346,6 +411,66 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
                   {deleting ? t('operators.deleting') : t('operators.delete')}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+        {toChangePin && (
+          <div className="modal-backdrop" onClick={() => setToChangePin(null)}>
+            <div
+              className="modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="change-pin-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h3 id="change-pin-title" className="modal-title">
+                {t('operators.changePinTitle', { name: toChangePin.name })}
+              </h3>
+              <form onSubmit={handleChangePin}>
+                <label className="field">
+                  <span>{t('operators.oldPin')}</span>
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    value={oldPin}
+                    onChange={(e) => setOldPin(e.target.value)}
+                    placeholder={t('operators.oldPinPlaceholder')}
+                    autoFocus
+                    disabled={changingPin}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>{t('operators.newPin')}</span>
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    value={newPinValue}
+                    onChange={(e) => setNewPinValue(e.target.value)}
+                    placeholder={t('operators.newPinPlaceholder')}
+                    disabled={changingPin}
+                    required
+                  />
+                </label>
+                {changePinError && <p className="error modal-error">{changePinError}</p>}
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setToChangePin(null)}
+                    disabled={changingPin}
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={changingPin || !oldPin.trim() || !newPinValue.trim()}
+                  >
+                    {changingPin ? t('operators.changingPin') : t('operators.changePin')}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

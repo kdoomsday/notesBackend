@@ -188,6 +188,11 @@ export const authApi = {
     deleteOperator: (id: number) => api<unknown>(`/api/operators/${id}`, { method: 'DELETE' }),
     restoreOperator: (id: number) =>
         api<unknown>(`/api/operators/restore/${id}`, { method: 'DELETE' }),
+    changePin: (id: number, oldPin: string, newPin: string) =>
+        api<unknown>(`/api/operators/change-pin/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ oldPin, newPin }),
+        }),
     users: () => api<PresentationUser[]>('/api/users'),
     createUser: (name: string, password: string) =>
         api<User>('/api/users', {
