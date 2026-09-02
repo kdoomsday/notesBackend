@@ -238,6 +238,7 @@
     "invalidCredentials": "Invalid name or password",
     "missingCredentials": "Name and password are required",
     "serverUnreachable": "Could not reach the notes server",
-    "couldNotLoad": "Could not load {{resource}}"
+    "couldNotLoad": "Could not load {{resource}}",
+    "unauthorized": "Unauthorized"
   }
 }

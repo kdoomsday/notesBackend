@@ -132,7 +132,7 @@ export default function Users({ me, onLogout }: UsersProps) {
       setEditing(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setFormError(t('errors.unauthorized'));
         return;
       }
       if (err instanceof ApiError && err.status === 409) {
@@ -161,7 +161,7 @@ export default function Users({ me, onLogout }: UsersProps) {
       setToDelete(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setDeleteError(t('errors.unauthorized'));
         return;
       }
       setDeleteError(serverErrorMessage(err) || t('users.deleteFailed'));
@@ -188,7 +188,7 @@ export default function Users({ me, onLogout }: UsersProps) {
       setAssigningUser(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setAssignError(t('errors.unauthorized'));
         return;
       }
       setAssignError(serverErrorMessage(err) || t('users.assignRoleFailed'));
@@ -371,7 +371,7 @@ export default function Users({ me, onLogout }: UsersProps) {
                         );
                       } catch (err) {
                         if (err instanceof ApiError && err.status === 401) {
-                          onLogout();
+                          setRestoreError(t('errors.unauthorized'));
                           return;
                         }
                         setRestoreError(

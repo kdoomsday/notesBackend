@@ -75,7 +75,7 @@ export default function Patients({ me, onLogout, onSelectPatient }: PatientsProp
       setShowCreate(false);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setCreateError(t('errors.unauthorized'));
         return;
       }
       if (err instanceof ApiError && err.status === 409) {

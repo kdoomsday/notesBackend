@@ -76,7 +76,7 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
       setShowCreate(false);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setCreateError(t('errors.unauthorized'));
         return;
       }
       if (err instanceof ApiError && err.status === 409) {
@@ -101,7 +101,7 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
       setToDelete(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setDeleteError(t('errors.unauthorized'));
         return;
       }
       setDeleteError(serverErrorMessage(err) || t('operators.deleteFailed'));
@@ -134,7 +134,7 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
       );
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setRestoreError(t('errors.unauthorized'));
         return;
       }
       setRestoreError(serverErrorMessage(err) || t('operators.restoreFailed'));
@@ -163,7 +163,7 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
       setToChangePin(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setChangePinError(t('errors.unauthorized'));
         return;
       }
       if (err instanceof ApiError && (err.status === 400 || err.status === 404)) {

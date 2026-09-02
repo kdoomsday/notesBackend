@@ -1,7 +1,7 @@
 import http from 'node:http';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { config } from './config.js';
-import { deleteSession, type SessionRecord } from './sessions.js';
+import type { SessionRecord } from './sessions.js';
 
 const HOP_BY_HOP_REQUEST = new Set(['host', 'connection', 'cookie', 'set-cookie', 'accept-encoding']);
 
@@ -52,14 +52,7 @@ export function proxyToNotes(
       if (HOP_BY_HOP_RESPONSE.has(key.toLowerCase())) continue;
       responseHeaders[key] = value;
     }
-    if (proxyRes.statusCode === 401 && session) {
-      const url = request.url.split('?')[0];
-      const isAuthCheck = url === '/api/auth/me' || url === '/api/auth/login';
-      if (isAuthCheck) {
-        deleteSession(session.sessionToken);
-        responseHeaders['set-cookie'] = 'session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0';
-      }
-    }
+
     reply.raw.writeHead(proxyRes.statusCode ?? 502, responseHeaders);
     proxyRes.pipe(reply.raw);
   });

@@ -96,7 +96,7 @@ export default function Roles({ me, onLogout }: RolesProps) {
       setRolePermissions(rolePermIds);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setPermissionsError(t('errors.unauthorized'));
         return;
       }
       setPermissionsError(serverErrorMessage(err) || t('roles.loadPermissionsFailed'));

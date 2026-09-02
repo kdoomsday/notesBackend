@@ -112,7 +112,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
       setEditing(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setFormError(t('errors.unauthorized'));
         return;
       }
       if (err instanceof ApiError && err.status === 409) {
@@ -141,7 +141,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
       setToDelete(null);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setDeleteError(t('errors.unauthorized'));
         return;
       }
       setDeleteError(serverErrorMessage(err) || t('categories.deleteFailed'));
@@ -300,7 +300,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                         );
                       } catch (err) {
                         if (err instanceof ApiError && err.status === 401) {
-                          onLogout();
+                          setRestoreError(t('errors.unauthorized'));
                           return;
                         }
                         setRestoreError(

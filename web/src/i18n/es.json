@@ -238,6 +238,7 @@
     "invalidCredentials": "Nombre o contraseña inválidos",
     "missingCredentials": "El nombre y la contraseña son obligatorios",
     "serverUnreachable": "No se pudo conectar con el servidor de notas",
-    "couldNotLoad": "No se pudo cargar {{resource}}"
+    "couldNotLoad": "No se pudo cargar {{resource}}",
+    "unauthorized": "No autorizado"
   }
 }

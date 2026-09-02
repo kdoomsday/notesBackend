@@ -144,7 +144,7 @@ export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelect
       onPatientDeleted();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        onLogout();
+        setDeleteError(t('errors.unauthorized'));
         return;
       }
       setDeleteError(serverErrorMessage(err) || t('patients.deleteFailed'));
