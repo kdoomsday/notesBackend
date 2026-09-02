@@ -58,6 +58,7 @@
     "create": "Crear",
     "name": "Nombre",
     "pin": "PIN",
+    "pinInvalid": "El PIN solo puede contener números.",
     "creating": "Creando…",
     "namePlaceholder": "Nombre del operador",
     "pinPlaceholder": "p. ej. 1234",

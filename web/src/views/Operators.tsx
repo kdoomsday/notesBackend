@@ -17,6 +17,7 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
   const [newPin, setNewPin] = useState('');
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState('');
+  const [pinInvalid, setPinInvalid] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [toDelete, setToDelete] = useState<Operator | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -58,6 +59,7 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
     setNewName('');
     setNewPin('');
     setCreateError('');
+    setPinInvalid(false);
     setShowCreate(true);
   }
 
@@ -66,6 +68,11 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
     const name = newName.trim();
     const pin = newPin.trim();
     if (!name || !pin || creating) return;
+    if (!/^\d+$/.test(pin)) {
+      setPinInvalid(true);
+      return;
+    }
+    setPinInvalid(false);
     setCreateError('');
     setCreating(true);
     try {
@@ -147,6 +154,7 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
     setOldPin('');
     setNewPinValue('');
     setChangePinError('');
+    setPinInvalid(false);
     setToChangePin(operator);
   }
 
@@ -156,6 +164,11 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
     const opOld = oldPin.trim();
     const opNew = newPinValue.trim();
     if (!opOld || !opNew) return;
+    if (!/^\d+$/.test(opNew) || !/^\d+$/.test(opOld)) {
+      setPinInvalid(true);
+      return;
+    }
+    setPinInvalid(false);
     setChangePinError('');
     setChangingPin(true);
     try {
@@ -351,13 +364,14 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
                     type="text"
                     inputMode="numeric"
                     value={newPin}
-                    onChange={(e) => setNewPin(e.target.value)}
+                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
                     placeholder={t('operators.pinPlaceholder')}
                     disabled={creating}
                     required
                   />
                 </label>
                 {createError && <p className="error modal-error">{createError}</p>}
+                {pinInvalid && <p className="error modal-error">{t('operators.pinInvalid')}</p>}
                 <div className="modal-actions">
                   <button
                     type="button"
@@ -433,7 +447,7 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
                     type="password"
                     inputMode="numeric"
                     value={oldPin}
-                    onChange={(e) => setOldPin(e.target.value)}
+                    onChange={(e) => setOldPin(e.target.value.replace(/\D/g, ''))}
                     placeholder={t('operators.oldPinPlaceholder')}
                     autoFocus
                     disabled={changingPin}
@@ -446,13 +460,14 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
                     type="password"
                     inputMode="numeric"
                     value={newPinValue}
-                    onChange={(e) => setNewPinValue(e.target.value)}
+                    onChange={(e) => setNewPinValue(e.target.value.replace(/\D/g, ''))}
                     placeholder={t('operators.newPinPlaceholder')}
                     disabled={changingPin}
                     required
                   />
                 </label>
                 {changePinError && <p className="error modal-error">{changePinError}</p>}
+                {pinInvalid && <p className="error modal-error">{t('operators.pinInvalid')}</p>}
                 <div className="modal-actions">
                   <button
                     type="button"

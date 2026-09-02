@@ -58,6 +58,7 @@
     "create": "Create",
     "name": "Name",
     "pin": "PIN",
+    "pinInvalid": "PIN can only contain numbers.",
     "creating": "Creating…",
     "namePlaceholder": "Operator name",
     "pinPlaceholder": "e.g. 1234",
