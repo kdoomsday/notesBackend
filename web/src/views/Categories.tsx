@@ -31,10 +31,15 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
   const [deleteError, setDeleteError] = useState('');
   const [restoringName, setRestoringName] = useState<string | null>(null);
   const [restoreError, setRestoreError] = useState('');
+  const [showReorder, setShowReorder] = useState(false);
+  const [order, setOrder] = useState<string[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [reorderError, setReorderError] = useState('');
 
   useEffect(() => {
     authApi
-      .categories()
+      .allCategories()
       .then(setCategories)
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
@@ -46,16 +51,17 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
   }, [t]);
 
   useEffect(() => {
-    if (!showForm && !toDelete) return;
+    if (!showForm && !toDelete && !showReorder) return;
     function onKeyDown(event: KeyboardEvent) {
       if (event.key !== 'Escape') return;
       setShowForm(false);
       setEditing(null);
       setToDelete(null);
+      setShowReorder(false);
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showForm, toDelete]);
+  }, [showForm, toDelete, showReorder]);
 
   function openCreate() {
     setEditing(null);
@@ -132,7 +138,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     setDeleteError('');
     setDeleting(true);
     try {
-      await authApi.toggleDeleteCategory(toDelete.name);
+      await authApi.deleteCategory(toDelete.name);
       setCategories((prev) =>
         prev
           ? prev.map((c) => (c.name === toDelete.name ? { ...c, deleted: !c.deleted } : c))
@@ -150,6 +156,40 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     }
   }
 
+  function openReorder() {
+    const activeCategories = (categories ?? [])
+      .filter((c) => !c.deleted)
+      .slice()
+      .sort(
+        (a, b) =>
+          (a.categoryOrder ?? Infinity) - (b.categoryOrder ?? Infinity) ||
+          a.name.localeCompare(b.name)
+      );
+    setOrder(activeCategories.map((c) => c.name));
+    setReorderError('');
+    setShowReorder(true);
+  }
+
+  async function handleSaveOrder() {
+    if (savingOrder) return;
+    setReorderError('');
+    setSavingOrder(true);
+    try {
+      await authApi.reorderCategories(order);
+      setShowReorder(false);
+      const fresh = await authApi.allCategories();
+      setCategories(fresh);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setReorderError(t('errors.unauthorized'));
+        return;
+      }
+      setReorderError(serverErrorMessage(err) || t('categories.reorderFailed'));
+    } finally {
+      setSavingOrder(false);
+    }
+  }
+
   async function handleLogout() {
     try {
       await authApi.logout();
@@ -160,8 +200,10 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
   }
 
   const all = categories ?? [];
-  const active = all.filter((c) => !c.deleted).sort((a, b) => a.name.localeCompare(b.name));
+    /* const active = all.filter((c) => !c.deleted).sort((a, b) => a.name.localeCompare(b.name)); */
+  const active = all.filter((c) => !c.deleted);
   const deleted = all.filter((c) => c.deleted).sort((a, b) => a.name.localeCompare(b.name));
+  const byName = new Map(all.map((c) => [c.name, c] as const));
 
   return (
     <div className="view">
@@ -189,9 +231,19 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                 : t('categories.count', { count: active.length })}
             </p>
           </div>
-          <button type="button" className="btn btn-primary" onClick={openCreate}>
-            {t('categories.newCategory')}
-          </button>
+          <div className="section-head-actions">
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={openReorder}
+              disabled={categories === null || active.length < 2}
+            >
+              {t('categories.reorder')}
+            </button>
+            <button type="button" className="btn btn-primary" onClick={openCreate}>
+              {t('categories.newCategory')}
+            </button>
+          </div>
         </div>
         {error && <div className="error app-error">{error}</div>}
         {categories === null ? (
@@ -290,22 +342,17 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                       setRestoreError('');
                       setRestoringName(cat.name);
                       try {
-                        await authApi.toggleDeleteCategory(cat.name);
-                        setCategories((prev) =>
-                          prev
-                            ? prev.map((c) =>
-                                c.name === cat.name ? { ...c, deleted: false } : c
-                              )
-                            : prev
-                        );
+                          await authApi.restoreCategory(cat.name);
+                        const fresh = await authApi.allCategories();
+                        setCategories(fresh);
                       } catch (err) {
-                        if (err instanceof ApiError && err.status === 401) {
-                          setRestoreError(t('errors.unauthorized'));
-                          return;
-                        }
-                        setRestoreError(
-                          serverErrorMessage(err) || t('categories.restoreFailed')
-                        );
+                          if (err instanceof ApiError && err.status === 401) {
+                              setRestoreError(t('errors.unauthorized'));
+                              return;
+                          }
+                          setRestoreError(
+                              serverErrorMessage(err) || t('categories.restoreFailed')
+                          );
                       } finally {
                         setRestoringName(null);
                       }
@@ -440,6 +487,105 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                   disabled={deleting}
                 >
                   {deleting ? t('categories.deleting') : t('categories.delete')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showReorder && (
+          <div className="modal-backdrop" onClick={() => setShowReorder(false)}>
+            <div
+              className="modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="reorder-categories-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h3 id="reorder-categories-title" className="modal-title">
+                {t('categories.reorderTitle')}
+              </h3>
+              <p className="modal-text">{t('categories.reorderInstructions')}</p>
+              {reorderError && <p className="error modal-error">{reorderError}</p>}
+              <ul
+                className="reorder-list"
+                onDrop={(event) => {
+                  event.preventDefault();
+                  setDraggedIndex(null);
+                }}
+                onDragOver={(event) => event.preventDefault()}
+              >
+                {order.map((name, index) => (
+                  <li
+                    key={name}
+                    className={
+                      'reorder-item' + (draggedIndex === index ? ' reorder-item-current' : '')
+                    }
+                    draggable={!savingOrder}
+                    onDragStart={(event) => {
+                      setDraggedIndex(index);
+                      event.dataTransfer.effectAllowed = 'move';
+                      event.dataTransfer.setData('text/plain', name);
+                    }}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = 'move';
+                    }}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      if (draggedIndex === null || draggedIndex === index) {
+                        setDraggedIndex(null);
+                        return;
+                      }
+                      setOrder((prev) => {
+                        const next = prev.slice();
+                        const [moved] = next.splice(draggedIndex, 1);
+                        next.splice(index, 0, moved);
+                        return next;
+                      });
+                      setDraggedIndex(null);
+                    }}
+                    onDragEnd={() => setDraggedIndex(null)}
+                  >
+                    <CategoryIcon iconName={byName.get(name)?.iconName ?? ''} size={18} />
+                    <span className="operator-name">{byName.get(name)?.name ?? name}</span>
+                    <svg
+                      className="reorder-drag-handle"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="9" cy="6" r="1" />
+                      <circle cx="15" cy="6" r="1" />
+                      <circle cx="9" cy="12" r="1" />
+                      <circle cx="15" cy="12" r="1" />
+                      <circle cx="9" cy="18" r="1" />
+                      <circle cx="15" cy="18" r="1" />
+                    </svg>
+                  </li>
+                ))}
+              </ul>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setShowReorder(false)}
+                  disabled={savingOrder}
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSaveOrder}
+                  disabled={savingOrder}
+                >
+                  {savingOrder ? t('categories.reordering') : t('categories.save')}
                 </button>
               </div>
             </div>

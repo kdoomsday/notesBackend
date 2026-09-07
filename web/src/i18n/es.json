@@ -124,7 +124,12 @@
     "deletedCount_other": "{{count}} categorías eliminadas",
     "deletedTag": "Eliminada",
     "restore": "Restaurar categoría",
-    "restoreFailed": "No se pudo restaurar la categoría"
+    "restoreFailed": "No se pudo restaurar la categoría",
+    "reorder": "Reordenar",
+    "reorderTitle": "Reordenar categorías",
+    "reorderInstructions": "Arrastra las categorías para establecer su orden.",
+    "reordering": "Guardando orden…",
+    "reorderFailed": "No se pudo guardar el nuevo orden"
   },
   "users": {
     "title": "Usuarios",
