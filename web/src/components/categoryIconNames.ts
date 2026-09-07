@@ -10,4 +10,13 @@ export const CATEGORY_ICON_NAMES: string[] = [
   'Filled.Straighten',
   'Filled.Thermostat',
   'Filled.Vaccines',
+  'Filled.Logout',
+  'Filled.MedicationLiquid',
+  'Filled.Notifications',
+  'Filled.Warning',
+  'Filled.Info',
+  'Filled.Healing',
+  'Filled.Emergency',
+  'Filled.Biotech',
+  'Filled.Science',
 ];
