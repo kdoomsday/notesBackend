@@ -39,7 +39,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
 
   useEffect(() => {
     authApi
-      .categories()
+      .allCategories()
       .then(setCategories)
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
@@ -177,7 +177,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     try {
       await authApi.reorderCategories(order);
       setShowReorder(false);
-      const fresh = await authApi.categories();
+      const fresh = await authApi.allCategories();
       setCategories(fresh);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {

@@ -174,6 +174,7 @@ export const authApi = {
     notePhotos: (noteId: string) => api<NotePhoto[]>(`/api/notes/${noteId}/photos`),
     noteUpdates: (noteId: string) => api<NoteUpdate[]>(`/api/note-updates/${noteId}`),
     categories: () => api<Category[]>('/api/categories'),
+    allCategories: () => api<Category[]>('/api/categories/all'),
     createCategory: (category: Category) =>
         api<unknown>('/api/categories', { method: 'POST', body: JSON.stringify(category) }),
     updateCategory: (oldName: string, category: Category) =>
