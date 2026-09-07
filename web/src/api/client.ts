@@ -36,6 +36,7 @@ export interface Category {
   iconName: string;
   categoryType: { type: 'Numeric' | 'Text' };
   fixedText?: string;
+  categoryOrder?: number;
   deleted?: boolean;
 }
 
@@ -182,6 +183,11 @@ export const authApi = {
         }),
     toggleDeleteCategory: (name: string) =>
         api<unknown>(`/api/categories/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+    reorderCategories: (names: string[]) =>
+        api<unknown>('/api/categories/all/reorder', {
+            method: 'PUT',
+            body: JSON.stringify(names),
+        }),
     operators: () => api<Operator[]>('/api/operators'),
     createOperator: (name: string, pin: string) =>
         api<Operator>('/api/operators', { method: 'POST', body: JSON.stringify({ name, pin }) }),
