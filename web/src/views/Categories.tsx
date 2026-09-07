@@ -177,6 +177,8 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     try {
       await authApi.reorderCategories(order);
       setShowReorder(false);
+      const fresh = await authApi.categories();
+      setCategories(fresh);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setReorderError(t('errors.unauthorized'));
