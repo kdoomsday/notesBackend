@@ -182,8 +182,10 @@ export const authApi = {
             method: 'PUT',
             body: JSON.stringify(category),
         }),
-    toggleDeleteCategory: (name: string) =>
+    deleteCategory: (name: string) =>
         api<unknown>(`/api/categories/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+    restoreCategory: (name: string) =>
+        api<unknown>(`/api/categories/restore/${encodeURIComponent(name)}`, { method: 'PUT' }),
     reorderCategories: (names: string[]) =>
         api<unknown>('/api/categories/all/reorder', {
             method: 'PUT',

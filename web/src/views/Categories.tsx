@@ -138,7 +138,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     setDeleteError('');
     setDeleting(true);
     try {
-      await authApi.toggleDeleteCategory(toDelete.name);
+      await authApi.deleteCategory(toDelete.name);
       setCategories((prev) =>
         prev
           ? prev.map((c) => (c.name === toDelete.name ? { ...c, deleted: !c.deleted } : c))
@@ -342,22 +342,17 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                       setRestoreError('');
                       setRestoringName(cat.name);
                       try {
-                        await authApi.toggleDeleteCategory(cat.name);
-                        setCategories((prev) =>
-                          prev
-                            ? prev.map((c) =>
-                                c.name === cat.name ? { ...c, deleted: false } : c
-                              )
-                            : prev
-                        );
+                          await authApi.restoreCategory(cat.name);
+                        const fresh = await authApi.allCategories();
+                        setCategories(fresh);
                       } catch (err) {
-                        if (err instanceof ApiError && err.status === 401) {
-                          setRestoreError(t('errors.unauthorized'));
-                          return;
-                        }
-                        setRestoreError(
-                          serverErrorMessage(err) || t('categories.restoreFailed')
-                        );
+                          if (err instanceof ApiError && err.status === 401) {
+                              setRestoreError(t('errors.unauthorized'));
+                              return;
+                          }
+                          setRestoreError(
+                              serverErrorMessage(err) || t('categories.restoreFailed')
+                          );
                       } finally {
                         setRestoringName(null);
                       }
