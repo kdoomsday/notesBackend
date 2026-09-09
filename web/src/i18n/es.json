@@ -27,7 +27,10 @@
     "namePlaceholder": "p. ej. admin",
     "password": "Contraseña",
     "signingIn": "Iniciando sesión…",
-    "signIn": "Iniciar sesión"
+    "signIn": "Iniciar sesión",
+    "downloadApp": "Descargar la aplicación Android",
+    "qrAlt": "Código QR para descargar la aplicación Android",
+    "scanHint": "Escanea para descargar la aplicación en tu teléfono"
   },
   "patients": {
     "title": "Pacientes",

@@ -8,9 +8,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api/config': 'http://localhost:8080',
-      '/api': 'http://localhost:3000',
-      '/health': 'http://localhost:3000',
+      '/api': 'http://localhost:8080',
+      '/health': 'http://localhost:8080',
+      '/apk': 'http://localhost:8080',
     },
   },
   build: {

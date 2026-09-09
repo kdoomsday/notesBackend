@@ -1,5 +1,6 @@
-import { useSyncExternalStore, useState, type FormEvent } from 'react';
+import { useEffect, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import QRCode from 'qrcode';
 import { authApi, type Me } from '../api/client';
 import { getLogoUrl, subscribeLogo } from '../config';
 import { serverErrorMessage } from '../i18n';
@@ -16,6 +17,13 @@ export default function Login({ onLogin }: LoginProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [qrUrl, setQrUrl] = useState('');
+
+  useEffect(() => {
+    QRCode.toDataURL(`${window.location.origin}/apk`, { margin: 1, width: 180 })
+      .then(setQrUrl)
+      .catch(() => setQrUrl(''));
+  }, []);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -66,6 +74,15 @@ export default function Login({ onLogin }: LoginProps) {
             {busy ? t('login.signingIn') : t('login.signIn')}
           </button>
         </form>
+        <a className="login-download" href="/apk">
+          {t('login.downloadApp')}
+        </a>
+        {qrUrl && (
+          <>
+            <img className="login-qr" src={qrUrl} alt={t('login.qrAlt')} />
+            <p className="login-scan">{t('login.scanHint')}</p>
+          </>
+        )}
       </div>
     </div>
   );

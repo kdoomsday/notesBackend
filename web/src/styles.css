@@ -1433,6 +1433,38 @@ img.login-logo {
   text-align: center;
 }
 
+.login-download {
+  display: block;
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.login-download:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+.login-qr {
+  display: block;
+  width: 180px;
+  height: 180px;
+  margin: 20px auto 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+}
+
+.login-scan {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
 /* ---- Language switcher ---- */
 
 .language-select {

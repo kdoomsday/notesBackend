@@ -27,7 +27,10 @@
     "namePlaceholder": "e.g. admin",
     "password": "Password",
     "signingIn": "Signing in…",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "downloadApp": "Download the Android app",
+    "qrAlt": "QR code to download the Android app",
+    "scanHint": "Scan to download the app on your phone"
   },
   "patients": {
     "title": "Patients",

@@ -124,10 +124,42 @@ export class ApiError extends Error {
   }
 }
 
+const TOKEN_KEY = 'notes-token';
+const NAME_KEY = 'notes-name';
+
+export function getToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function storedName(): string | null {
+  try {
+    return localStorage.getItem(NAME_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function clearSession(): void {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(NAME_KEY);
+  } catch {
+    // Ignore storage access errors.
+  }
+}
+
 export async function api<T>(url: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
   if (options.body !== undefined && options.body !== null && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
+  }
+  const token = getToken();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   const res = await fetch(url, { ...options, headers });
@@ -158,10 +190,32 @@ export function notePhotoUrl(noteId: string, photoId: string): string {
 }
 
 export const authApi = {
-    me: () => api<Me>('/api/auth/me'),
-    login: (name: string, password: string) =>
-        api<Me>('/api/auth/login', { method: 'POST', body: JSON.stringify({ name, password }) }),
-    logout: () => api<unknown>('/api/auth/logout', { method: 'POST' }),
+    me: (): Promise<Me | null> => {
+      const token = getToken();
+      const name = storedName();
+      if (!token || !name) return Promise.resolve(null);
+      return Promise.resolve({ name });
+    },
+    login: async (name: string, password: string) => {
+      const res = await api<{ token: string; expiresAt: string }>('/api/login', {
+        method: 'POST',
+        body: JSON.stringify({ name, password }),
+      });
+      try {
+        localStorage.setItem(TOKEN_KEY, res.token);
+        localStorage.setItem(NAME_KEY, name);
+      } catch {
+        // Ignore storage access errors.
+      }
+      return { name };
+    },
+    logout: async () => {
+      try {
+        await api<unknown>('/api/logout', { method: 'POST' });
+      } finally {
+        clearSession();
+      }
+    },
     patients: () => api<Patient[]>('/api/patients'),
     createPatient: (name: string) =>
         api<Patient>('/api/patients', { method: 'POST', body: JSON.stringify({ name }) }),
