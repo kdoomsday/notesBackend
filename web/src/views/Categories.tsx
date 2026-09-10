@@ -96,6 +96,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
       name,
       iconName,
       categoryType,
+      categoryOrder: editing?.categoryOrder ?? (categories?.length ?? 0),
       deleted: false,
     };
     if (formFixedText.trim()) {
