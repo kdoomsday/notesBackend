@@ -96,6 +96,71 @@ const ICONS: Record<string, ReactNode> = {
       </g>
     </>
   ),
+  Logout: (
+    <>
+      <path d="M7 17H5a1.5 1.5 0 0 1-1.5-1.5v-11A1.5 1.5 0 0 1 5 3h2" />
+      <path d="M13 14l3-3-3-3" />
+      <path d="M16 11H7" />
+    </>
+  ),
+  MedicationLiquid: (
+    <>
+      <rect x="7" y="2" width="6" height="4" rx="1" />
+      <rect x="5.5" y="6" width="9" height="12" rx="1.5" />
+      <path d="M8 10h4" />
+      <path d="M10 8v4" />
+    </>
+  ),
+  Notifications: (
+    <>
+      <path d="M10 17.5a2 2 0 0 1-2-2h4a2 2 0 0 1-2 2z" />
+      <path d="M16 12.5V8a6 6 0 0 0-5-5.91A1 1 0 0 0 10 3a1 1 0 0 0-1 .09A6 6 0 0 0 4 8v4.5l-1 2h14l-1-2z" />
+    </>
+  ),
+  Warning: (
+    <>
+      <path d="M10 2L1.5 17.5h17L10 2z" />
+      <path d="M10 8v4" />
+      <circle cx="10" cy="14" r="0.5" fill="currentColor" stroke="none" />
+    </>
+  ),
+  Info: (
+    <>
+      <circle cx="10" cy="10" r="8" />
+      <path d="M10 9v5" />
+      <circle cx="10" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
+    </>
+  ),
+  Healing: (
+    <>
+      <path d="M5 8.5C5 6 7 4 9.5 4H10V2.5A1.5 1.5 0 0 0 8.5 1h-3A1.5 1.5 0 0 0 4 2.5v3A1.5 1.5 0 0 0 5.5 7H7v1.5z" />
+      <path d="M15 8.5C15 6 13 4 10.5 4H10V2.5A1.5 1.5 0 0 1 11.5 1h3A1.5 1.5 0 0 1 16 2.5v3A1.5 1.5 0 0 1 14.5 7H13v1.5z" />
+      <path d="M5 11.5C5 14 7 16 9.5 16H10v1.5A1.5 1.5 0 0 0 11.5 19h3a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 14.5 13H13v-1.5z" />
+      <path d="M15 11.5C15 14 13 16 10.5 16H10v1.5A1.5 1.5 0 0 1 8.5 19h-3A1.5 1.5 0 0 1 4 17.5v-3A1.5 1.5 0 0 1 5.5 13H7v-1.5z" />
+    </>
+  ),
+  Emergency: (
+    <>
+      <path d="M10 2v16" />
+      <path d="M2 10h16" />
+      <path d="M4.22 4.22l11.56 11.56" />
+      <path d="M15.78 4.22L4.22 15.78" />
+    </>
+  ),
+  Biotech: (
+    <>
+      <path d="M9 3h2v5.5l-4 7.5h8l-4-7.5V3z" />
+      <path d="M7 16h6" />
+      <circle cx="10" cy="11" r="1" />
+    </>
+  ),
+  Science: (
+    <>
+      <path d="M8 2h4v6l4 8.5a1.5 1.5 0 0 1-1.3 2.2H5.3A1.5 1.5 0 0 1 4 16.5L8 8V2z" />
+      <path d="M7 2h6" />
+      <path d="M9 13h2" />
+    </>
+  ),
 };
 
 export function resolveCategoryIconName(iconName?: string | null): string {
