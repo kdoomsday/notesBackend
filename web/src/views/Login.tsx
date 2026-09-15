@@ -83,6 +83,7 @@ export default function Login({ onLogin }: LoginProps) {
             <p className="login-scan">{t('login.scanHint')}</p>
           </>
         )}
+        <p className="login-version">{t('login.version', { version: __APP_VERSION__ })}</p>
       </div>
     </div>
   );

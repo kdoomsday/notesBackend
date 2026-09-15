@@ -30,7 +30,8 @@
     "signIn": "Iniciar sesión",
     "downloadApp": "Descargar la aplicación Android",
     "qrAlt": "Código QR para descargar la aplicación Android",
-    "scanHint": "Escanea para descargar la aplicación en tu teléfono"
+    "scanHint": "Escanea para descargar la aplicación en tu teléfono",
+    "version": "Versión {{version}}"
   },
   "patients": {
     "title": "Pacientes",
