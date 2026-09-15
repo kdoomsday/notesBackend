@@ -1,0 +1,17 @@
+[Unit]
+Description=notes-web server
+After=network.target
+
+[Service]
+Type=simple
+User=notes-web
+Group=notes-web
+WorkingDirectory=/opt/notes-web
+Environment=PORT=3000
+Environment=NOTES_URL=http://localhost:8080
+ExecStart=__NODE_BIN__ dist/server/index.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
