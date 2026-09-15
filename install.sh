@@ -2,6 +2,7 @@
 set -euo pipefail
 
 APP_NAME="notes-web"
+RUN_USER="notes-user"
 INSTALL_DIR="/opt/${APP_NAME}"
 SERVICE_FILE="/etc/systemd/system/${APP_NAME}.service"
 
@@ -17,9 +18,9 @@ die() {
 NODE_BIN="$(command -v node || true)"
 [ -n "$NODE_BIN" ] || die "Node.js (>=20) not found in PATH"
 
-# Create dedicated system user.
-if ! id "$APP_NAME" &>/dev/null; then
-  useradd --system --home-dir "$INSTALL_DIR" --shell /usr/sbin/nologin "$APP_NAME"
+# Create dedicated system user (shared across applications).
+if ! id "$RUN_USER" &>/dev/null; then
+  useradd --system --shell /usr/sbin/nologin "$RUN_USER"
 fi
 
 # Deploy application files.
@@ -31,7 +32,7 @@ cp -a \
   "$SCRIPT_DIR/package.json" \
   "$SCRIPT_DIR/package-lock.json" \
   "$INSTALL_DIR/"
-chown -R "$APP_NAME:$APP_NAME" "$INSTALL_DIR"
+chown -R "$RUN_USER:$RUN_USER" "$INSTALL_DIR"
 
 # Generate the systemd unit once; preserve any manual edits on updates.
 if [ ! -f "$SERVICE_FILE" ]; then

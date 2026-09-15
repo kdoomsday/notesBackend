@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=notes-web
-Group=notes-web
+User=notes-user
+Group=notes-user
 WorkingDirectory=/opt/notes-web
 Environment=PORT=3000
 Environment=NOTES_URL=http://localhost:8080
