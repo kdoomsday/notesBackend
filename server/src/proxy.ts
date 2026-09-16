@@ -1,7 +1,6 @@
 import http from 'node:http';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { config } from './config.js';
-import type { SessionRecord } from './sessions.js';
 
 const HOP_BY_HOP_REQUEST = new Set(['host', 'connection', 'cookie', 'set-cookie', 'accept-encoding']);
 
@@ -18,11 +17,7 @@ function notesBase(): string {
   return config.notesUrl.endsWith('/') ? config.notesUrl : config.notesUrl + '/';
 }
 
-export function proxyToNotes(
-  request: FastifyRequest,
-  reply: FastifyReply,
-  session: SessionRecord | null = null
-): void {
+export function proxyToNotes(request: FastifyRequest, reply: FastifyReply): void {
   reply.hijack();
 
   const target = new URL(request.url, notesBase());
@@ -32,9 +27,6 @@ export function proxyToNotes(
     if (value === undefined) continue;
     if (HOP_BY_HOP_REQUEST.has(key.toLowerCase())) continue;
     headers[key] = Array.isArray(value) ? value.join(', ') : value;
-  }
-  if (session) {
-    headers.Authorization = `Bearer ${session.session.token}`;
   }
 
   let body: Buffer | null = null;

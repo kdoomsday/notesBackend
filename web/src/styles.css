@@ -170,6 +170,13 @@ img.login-logo {
   font-size: 14px;
 }
 
+.login-version {
+  margin: 24px 0 0;
+  text-align: center;
+  color: #aaa;
+  font-size: 12px;
+}
+
 .field {
   display: block;
   margin-bottom: 16px;

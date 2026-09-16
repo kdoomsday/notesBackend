@@ -30,7 +30,8 @@
     "signIn": "Sign in",
     "downloadApp": "Download the Android app",
     "qrAlt": "QR code to download the Android app",
-    "scanHint": "Scan to download the app on your phone"
+    "scanHint": "Scan to download the app on your phone",
+    "version": "Version {{version}}"
   },
   "patients": {
     "title": "Patients",
