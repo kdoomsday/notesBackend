@@ -189,6 +189,22 @@ export function notePhotoUrl(noteId: string, photoId: string): string {
   return `/api/notes/${noteId}/photos/${photoId}`;
 }
 
+export interface FetchBlobOptions extends RequestInit {
+  auth?: boolean;
+}
+
+export async function fetchBlob(url: string, options: FetchBlobOptions = {}): Promise<Blob> {
+  const headers = new Headers(options.headers);
+  const { auth, ...rest } = options;
+  if (auth) {
+    const token = getToken();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+  }
+  const res = await fetch(url, { ...rest, headers });
+  if (!res.ok) throw new ApiError(`Request failed (${res.status})`, res.status);
+  return res.blob();
+}
+
 export const authApi = {
     me: (): Promise<Me | null> => {
       const token = getToken();

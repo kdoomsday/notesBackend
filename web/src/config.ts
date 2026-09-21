@@ -1,3 +1,5 @@
+import { fetchBlob } from './api/client';
+
 export interface UiConfig {
   primaryColor: string;
   accentColor: string;
@@ -26,9 +28,7 @@ function setLogoUrl(url: string | null): void {
 
 export async function loadLogoUrl(): Promise<string | null> {
   try {
-    const res = await fetch('/api/config/logo', { cache: 'no-store' });
-    if (!res.ok) throw new Error(`Unexpected status ${res.status}`);
-    const blob = await res.blob();
+    const blob = await fetchBlob('/api/config/logo', { cache: 'no-store' });
     const url = URL.createObjectURL(blob);
     if (logoObjectUrl) URL.revokeObjectURL(logoObjectUrl);
     logoObjectUrl = url;

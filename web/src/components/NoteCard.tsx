@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ApiError,
   authApi,
+  fetchBlob,
   notePhotoUrl,
   type Note,
   type NotePhoto,
@@ -94,6 +95,9 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
   const [photos, setPhotos] = useState<NotePhoto[] | null>(null);
   const [error, setError] = useState('');
   const [viewPhoto, setViewPhoto] = useState<NotePhoto | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoLoading, setPhotoLoading] = useState(false);
+  const [photoError, setPhotoError] = useState('');
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<NoteUpdate[] | null>(null);
   const [historyError, setHistoryError] = useState('');
@@ -128,6 +132,36 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [viewPhoto]);
+
+  useEffect(() => {
+    if (!viewPhoto) {
+      setPhotoUrl(null);
+      return;
+    }
+    let cancelled = false;
+    let objectUrl: string | null = null;
+    setPhotoLoading(true);
+    setPhotoError('');
+    fetchBlob(notePhotoUrl(note.id, viewPhoto.id), { auth: true })
+      .then((blob) => {
+        if (cancelled) return;
+        objectUrl = URL.createObjectURL(blob);
+        setPhotoUrl(objectUrl);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setPhotoError(
+          serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('notes.photos') })
+        );
+      })
+      .finally(() => {
+        if (!cancelled) setPhotoLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [note.id, t, viewPhoto]);
 
   useEffect(() => {
     if (!showHistory) return;
@@ -275,11 +309,13 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
             <h3 id="photo-modal-title" className="modal-title">
               {viewPhoto.origName}
             </h3>
-            <img
-              className="photo-full"
-              src={notePhotoUrl(note.id, viewPhoto.id)}
-              alt={viewPhoto.origName}
-            />
+            {photoLoading ? (
+              <p className="modal-text">{t('common.loading')}</p>
+            ) : photoError ? (
+              <p className="error modal-error">{photoError}</p>
+            ) : photoUrl ? (
+              <img className="photo-full" src={photoUrl} alt={viewPhoto.origName} />
+            ) : null}
             <div className="modal-actions">
               <button type="button" className="btn btn-ghost" onClick={() => setViewPhoto(null)}>
                 {t('common.close')}
