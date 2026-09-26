@@ -1,6 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ApiError, authApi, type Category, type Me } from '../api/client';
+import {
+  ApiError,
+  authApi,
+  CATEGORY_TYPES,
+  type Category,
+  type CategoryType,
+  type Me,
+} from '../api/client';
 import { serverErrorMessage } from '../i18n';
 import CategoryIcon, {
   DEFAULT_CATEGORY_ICON_NAME,
@@ -22,7 +29,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
   const [editing, setEditing] = useState<Category | null>(null);
   const [formName, setFormName] = useState('');
   const [formIcon, setFormIcon] = useState(DEFAULT_CATEGORY_ICON_NAME);
-  const [formType, setFormType] = useState<'Numeric' | 'Text'>('Numeric');
+  const [formType, setFormType] = useState<CategoryType>('Numeric');
   const [formFixedText, setFormFixedText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
@@ -91,11 +98,10 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     setFormError('');
     setSubmitting(true);
 
-    const categoryType = { type: formType } as Category['categoryType'];
     const body: Category = {
       name,
       iconName,
-      categoryType,
+      categoryType: { type: formType },
       categoryOrder: editing?.categoryOrder ?? (categories?.length ?? 0),
       deleted: false,
     };
@@ -260,7 +266,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                 <CategoryIcon iconName={cat.iconName} size={18} />
                 <span className="operator-name">{cat.name}</span>
                 <span className="category-type-badge">
-                  {cat.categoryType.type === 'Numeric' ? t('categories.typeNumeric') : t('categories.typeText')}
+                  {t(`categories.type${cat.categoryType.type}`)}
                 </span>
                 <button
                   type="button"
@@ -417,11 +423,14 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                   <select
                     className="field-select"
                     value={formType}
-                    onChange={(e) => setFormType(e.target.value as 'Numeric' | 'Text')}
+                    onChange={(e) => setFormType(e.target.value as CategoryType)}
                     disabled={submitting}
                   >
-                    <option value="Numeric">{t('categories.typeNumeric')}</option>
-                    <option value="Text">{t('categories.typeText')}</option>
+                    {CATEGORY_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {t(`categories.type${type}`)}
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <label className="field">

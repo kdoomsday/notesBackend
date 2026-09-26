@@ -110,6 +110,7 @@
     "iconNoMatches": "No hay iconos coincidentes",
     "categoryType": "Tipo",
     "typeNumeric": "Numérico",
+    "typeDecimal": "Decimal",
     "typeText": "Texto",
     "fixedText": "Texto fijo",
     "fixedTextPlaceholder": "Texto fijo opcional",

@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ApiError,
   authApi,
+  isNumericCategoryType,
   type Category,
+  type CategoryType,
   type Note,
 } from '../api/client';
 import { serverErrorMessage } from '../i18n';
@@ -36,8 +38,14 @@ function extractNumericPoints(notes: Note[], fixedText?: string): ValueChartPoin
   return points;
 }
 
-function formatNumber(value: number, locale: string): string {
-  return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value);
+// High enough that no real value is rounded for display, low enough that
+// binary float noise in computed averages (0.1 + 0.2) is not shown verbatim.
+const DECIMAL_FRACTION_DIGITS = 10;
+
+function createNumberFormat(locale: string, type: CategoryType): Intl.NumberFormat {
+  return new Intl.NumberFormat(locale, {
+    maximumFractionDigits: type === 'Decimal' ? DECIMAL_FRACTION_DIGITS : 2,
+  });
 }
 
 function formatDate(value: string, locale: string): string {
@@ -66,7 +74,12 @@ export default function CategoryValuesModal({
   const [graphType, setGraphType] = useState<GraphType>('line');
   const [error, setError] = useState('');
 
-  const isNumeric = selected?.categoryType.type === 'Numeric';
+  const categoryType = selected?.categoryType.type;
+  const isNumeric = categoryType !== undefined && isNumericCategoryType(categoryType);
+  const numberFormat = useMemo(
+    () => (categoryType ? createNumberFormat(i18n.language, categoryType) : null),
+    [categoryType, i18n.language]
+  );
   const numericPoints =
     isNumeric && values ? extractNumericPoints(values, selected?.fixedText) : [];
   const stats =
@@ -173,16 +186,16 @@ export default function CategoryValuesModal({
             </label>
           </div>
         )}
-        {selected && stats && (
+        {selected && stats && numberFormat && (
           <div className="value-stats">
             <span>
-              <strong>{t('notes.min')}</strong> {formatNumber(stats.min, i18n.language)}
+              <strong>{t('notes.min')}</strong> {numberFormat.format(stats.min)}
             </span>
             <span>
-              <strong>{t('notes.max')}</strong> {formatNumber(stats.max, i18n.language)}
+              <strong>{t('notes.max')}</strong> {numberFormat.format(stats.max)}
             </span>
             <span>
-              <strong>{t('notes.avg')}</strong> {formatNumber(stats.avg, i18n.language)}
+              <strong>{t('notes.avg')}</strong> {numberFormat.format(stats.avg)}
             </span>
           </div>
         )}
