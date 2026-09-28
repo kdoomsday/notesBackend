@@ -31,6 +31,7 @@
     "downloadApp": "Download the Android app",
     "qrAlt": "QR code to download the Android app",
     "scanHint": "Scan to download the app on your phone",
+    "apkVersion": "APK version {{version}}",
     "version": "Version {{version}}"
   },
   "patients": {

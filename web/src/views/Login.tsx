@@ -18,11 +18,27 @@ export default function Login({ onLogin }: LoginProps) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [qrUrl, setQrUrl] = useState('');
+  const [apkVersion, setApkVersion] = useState('');
 
   useEffect(() => {
     QRCode.toDataURL(`${window.location.origin}/apk`, { margin: 1, width: 180 })
       .then(setQrUrl)
       .catch(() => setQrUrl(''));
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    authApi
+      .apkVersion()
+      .then((version) => {
+        if (!cancelled) setApkVersion(version);
+      })
+      .catch(() => {
+        if (!cancelled) setApkVersion('');
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function handleSubmit(event: FormEvent) {
@@ -77,6 +93,7 @@ export default function Login({ onLogin }: LoginProps) {
         <a className="login-download" href="/apk">
           {t('login.downloadApp')}
         </a>
+        {apkVersion && <p className="login-apk-version">{t('login.apkVersion', { version: apkVersion })}</p>}
         {qrUrl && (
           <>
             <img className="login-qr" src={qrUrl} alt={t('login.qrAlt')} />

@@ -212,6 +212,12 @@ export async function fetchBlob(url: string, options: FetchBlobOptions = {}): Pr
   return res.blob();
 }
 
+export async function fetchText(url: string, options: RequestInit = {}): Promise<string> {
+  const res = await fetch(url, options);
+  if (!res.ok) throw new ApiError(`Request failed (${res.status})`, res.status);
+  return (await res.text()).trim();
+}
+
 export const authApi = {
     me: (): Promise<Me | null> => {
       const token = getToken();
@@ -239,6 +245,7 @@ export const authApi = {
         clearSession();
       }
     },
+    apkVersion: (): Promise<string> => fetchText('/apk/version'),
     patients: () => api<Patient[]>('/api/patients'),
     createPatient: (name: string) =>
         api<Patient>('/api/patients', { method: 'POST', body: JSON.stringify({ name }) }),

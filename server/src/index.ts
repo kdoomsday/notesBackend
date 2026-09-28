@@ -18,6 +18,11 @@ app.all('/apk', (request, reply) => {
   return reply;
 });
 
+app.all('/apk/*', (request, reply) => {
+  proxyToNotes(request, reply);
+  return reply;
+});
+
 app.all('/api/*', (request, reply) => {
   proxyToNotes(request, reply);
   return reply;
@@ -29,7 +34,7 @@ const webDist = path.resolve(__dirname, '../../web/dist');
 if (fs.existsSync(webDist)) {
   await app.register(fastifyStatic, { root: webDist, wildcard: false });
   app.setNotFoundHandler((request, reply) => {
-    if (request.url.startsWith('/api') || request.url === '/health' || request.url === '/apk') {
+    if (request.url.startsWith('/api') || request.url === '/health' || request.url.startsWith('/apk')) {
       return reply.code(404).send({ error: 'Not found' });
     }
     return reply.sendFile('index.html');

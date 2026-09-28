@@ -1455,6 +1455,13 @@ img.login-logo {
   text-decoration: underline;
 }
 
+.login-apk-version {
+  margin: 4px 0 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .login-qr {
   display: block;
   width: 180px;

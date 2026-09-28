@@ -31,6 +31,7 @@
     "downloadApp": "Descargar la aplicación Android",
     "qrAlt": "Código QR para descargar la aplicación Android",
     "scanHint": "Escanea para descargar la aplicación en tu teléfono",
+    "apkVersion": "Versión APK {{version}}",
     "version": "Versión {{version}}"
   },
   "patients": {
