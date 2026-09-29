@@ -31,7 +31,7 @@ export interface NoteCategory {
   iconName: string;
 }
 
-export const CATEGORY_TYPES = ['Numeric', 'Decimal', 'Text'] as const;
+export const CATEGORY_TYPES = ['Numeric', 'Decimal', 'Text', 'Selection', 'Custom'] as const;
 export type CategoryType = (typeof CATEGORY_TYPES)[number];
 
 export function isNumericCategoryType(type: CategoryType): boolean {
@@ -45,6 +45,8 @@ export interface Category {
   fixedText?: string;
   categoryOrder?: number;
   deleted?: boolean;
+  options?: string[];
+  components?: string[];
 }
 
 export interface Note {

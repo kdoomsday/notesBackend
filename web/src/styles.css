@@ -635,6 +635,77 @@ img.login-logo {
   flex-shrink: 0;
 }
 
+.category-values-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ---- Category values editor ---- */
+
+.values-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.values-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.values-item input {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fbfcfe;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.values-item input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.values-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.values-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.values-add input,
+.values-add .field-select {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+
+.icon-btn-sm {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
 /* ---- Reorder categories ---- */
 
 .reorder-list {

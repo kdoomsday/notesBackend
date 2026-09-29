@@ -8,11 +8,22 @@ import {
   type CategoryType,
   type Me,
 } from '../api/client';
+import {
+  buildCategory,
+  categoryConfig,
+  categoryValuesError,
+  emptyExtras,
+  extraFieldForType,
+  extraValues,
+  readExtras,
+  type CategoryExtras,
+} from '../categoryTypes';
 import { serverErrorMessage } from '../i18n';
 import CategoryIcon, {
   DEFAULT_CATEGORY_ICON_NAME,
   resolveCategoryIconName,
 } from '../components/CategoryIcon';
+import CategoryValuesEditor from '../components/CategoryValuesEditor';
 import IconPicker from '../components/IconPicker';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -31,6 +42,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
   const [formIcon, setFormIcon] = useState(DEFAULT_CATEGORY_ICON_NAME);
   const [formType, setFormType] = useState<CategoryType>('Numeric');
   const [formFixedText, setFormFixedText] = useState('');
+  const [formExtras, setFormExtras] = useState<CategoryExtras>(emptyExtras);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [toDelete, setToDelete] = useState<Category | null>(null);
@@ -76,6 +88,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     setFormIcon(DEFAULT_CATEGORY_ICON_NAME);
     setFormType('Numeric');
     setFormFixedText('');
+    setFormExtras(emptyExtras());
     setFormError('');
     setShowForm(true);
   }
@@ -86,8 +99,13 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     setFormIcon(resolveCategoryIconName(cat.iconName));
     setFormType(cat.categoryType.type);
     setFormFixedText(cat.fixedText ?? '');
+    setFormExtras(readExtras(cat));
     setFormError('');
     setShowForm(true);
+  }
+
+  function setExtras(field: keyof CategoryExtras, next: string[]) {
+    setFormExtras((prev) => ({ ...prev, [field]: next }));
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -95,18 +113,26 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     const name = formName.trim();
     const iconName = formIcon.trim();
     if (!name || !iconName || submitting) return;
+    const valuesError = categoryValuesError(formType, formExtras);
+    if (valuesError) {
+      setFormError(valuesError);
+      return;
+    }
     setFormError('');
     setSubmitting(true);
 
-    const body: Category = {
-      name,
-      iconName,
-      categoryType: { type: formType },
-      categoryOrder: editing?.categoryOrder ?? (categories?.length ?? 0),
-      deleted: false,
-    };
+    let body = buildCategory(
+      {
+        name,
+        iconName,
+        categoryType: { type: formType },
+        categoryOrder: editing?.categoryOrder ?? (categories?.length ?? 0),
+        deleted: false,
+      },
+      formExtras
+    );
     if (formFixedText.trim()) {
-      body.fixedText = formFixedText.trim();
+      body = { ...body, fixedText: formFixedText.trim() };
     }
 
     try {
@@ -130,6 +156,10 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
       }
       if (err instanceof ApiError && err.status === 409) {
         setFormError(t('categories.alreadyExists'));
+        return;
+      }
+      if (err instanceof ApiError && err.status === 400) {
+        setFormError(t('categories.valuesRejected'));
         return;
       }
       setFormError(
@@ -206,11 +236,24 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     onLogout();
   }
 
+  function categoryValuesLabel(cat: Category) {
+    const field = extraFieldForType(cat.categoryType.type);
+    if (!field) return null;
+    return (
+      <span className="category-values-count">
+        {t(`categories.${field}Count`, { count: extraValues(cat).length })}
+      </span>
+    );
+  }
+
   const all = categories ?? [];
     /* const active = all.filter((c) => !c.deleted).sort((a, b) => a.name.localeCompare(b.name)); */
   const active = all.filter((c) => !c.deleted);
   const deleted = all.filter((c) => c.deleted).sort((a, b) => a.name.localeCompare(b.name));
   const byName = new Map(all.map((c) => [c.name, c] as const));
+  const typeConfig = categoryConfig(formType);
+  const valuesError = categoryValuesError(formType, formExtras);
+  const valuesCount = typeConfig ? formExtras[typeConfig.field].length : 0;
 
   return (
     <div className="view">
@@ -265,6 +308,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
               <li key={cat.name} className="operator-item">
                 <CategoryIcon iconName={cat.iconName} size={18} />
                 <span className="operator-name">{cat.name}</span>
+                {categoryValuesLabel(cat)}
                 <span className="category-type-badge">
                   {t(`categories.type${cat.categoryType.type}`)}
                 </span>
@@ -388,7 +432,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
         {showForm && (
           <div className="modal-backdrop" onClick={() => { setShowForm(false); setEditing(null); }}>
             <div
-              className="modal"
+              className="modal modal-wide"
               role="dialog"
               aria-modal="true"
               aria-labelledby="category-form-title"
@@ -433,6 +477,19 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                     ))}
                   </select>
                 </label>
+                {typeConfig && (
+                  <CategoryValuesEditor
+                    config={typeConfig}
+                    value={formExtras[typeConfig.field]}
+                    onChange={(next) => setExtras(typeConfig.field, next)}
+                    categories={active}
+                    currentName={editing?.name}
+                    disabled={submitting}
+                  />
+                )}
+                {valuesError && valuesCount > 0 && (
+                  <p className="error modal-error">{valuesError}</p>
+                )}
                 <label className="field">
                   <span>{t('categories.fixedText')}</span>
                   <input
@@ -456,7 +513,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={submitting || !formName.trim() || !formIcon.trim()}
+                    disabled={submitting || !formName.trim() || !formIcon.trim() || !!valuesError}
                   >
                     {submitting
                       ? (editing ? t('categories.saving') : t('categories.creating'))
