@@ -13,8 +13,8 @@ import {
   categoryConfig,
   categoryValuesError,
   emptyExtras,
+  extraCount,
   extraFieldForType,
-  extraValues,
   readExtras,
   type CategoryExtras,
 } from '../categoryTypes';
@@ -104,8 +104,8 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     setShowForm(true);
   }
 
-  function setExtras(field: keyof CategoryExtras, next: string[]) {
-    setFormExtras((prev) => ({ ...prev, [field]: next }));
+  function setExtras(next: CategoryExtras) {
+    setFormExtras(next);
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -241,7 +241,7 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     if (!field) return null;
     return (
       <span className="category-values-count">
-        {t(`categories.${field}Count`, { count: extraValues(cat).length })}
+        {t(`categories.${field}Count`, { count: extraCount(cat) })}
       </span>
     );
   }
@@ -480,10 +480,8 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                 {typeConfig && (
                   <CategoryValuesEditor
                     config={typeConfig}
-                    value={formExtras[typeConfig.field]}
-                    onChange={(next) => setExtras(typeConfig.field, next)}
-                    categories={active}
-                    currentName={editing?.name}
+                    extras={formExtras}
+                    onChange={setExtras}
                     disabled={submitting}
                   />
                 )}
