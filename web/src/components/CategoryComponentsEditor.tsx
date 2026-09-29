@@ -12,7 +12,7 @@ function newComponent(): Component {
   return { name: '', categoryType: { type: 'Text' } };
 }
 
-/** Ordered list of fields a `Custom` category defines inline. */
+/** Ordered list of fields a `Composite` category defines inline. */
 export default function CategoryComponentsEditor({
   value,
   onChange,

@@ -114,7 +114,7 @@
     "typeDecimal": "Decimal",
     "typeText": "Text",
     "typeSelection": "Selection",
-    "typeCustom": "Custom",
+    "typeComposite": "Composite",
     "fixedText": "Fixed text",
     "fixedTextPlaceholder": "Optional fixed text",
     "options": "Options",

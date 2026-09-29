@@ -27,7 +27,7 @@ export const CATEGORY_TYPE_CONFIGS: Partial<Record<CategoryType, CategoryTypeCon
     labelKey: 'categories.options',
     inlineKey: 'categories.optionsInline',
   },
-  Custom: {
+  Composite: {
     field: 'components',
     mode: 'component',
     labelKey: 'categories.components',
