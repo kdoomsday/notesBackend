@@ -31,11 +31,23 @@ export interface NoteCategory {
   iconName: string;
 }
 
-export const CATEGORY_TYPES = ['Numeric', 'Decimal', 'Text'] as const;
+export const CATEGORY_TYPES = ['Numeric', 'Decimal', 'Text', 'Selection', 'Composite'] as const;
 export type CategoryType = (typeof CATEGORY_TYPES)[number];
+
+/** A `Composite` category cannot hold components, so it is not offered inside one. */
+export const COMPONENT_TYPES = ['Numeric', 'Decimal', 'Text', 'Selection'] as const;
+export type ComponentType = (typeof COMPONENT_TYPES)[number];
 
 export function isNumericCategoryType(type: CategoryType): boolean {
   return type === 'Numeric' || type === 'Decimal';
+}
+
+/** A field of a `Composite` category, defined inline instead of referencing a category. */
+export interface Component {
+  name: string;
+  categoryType: { type: ComponentType };
+  options?: string[];
+  fixedText?: string;
 }
 
 export interface Category {
@@ -45,6 +57,8 @@ export interface Category {
   fixedText?: string;
   categoryOrder?: number;
   deleted?: boolean;
+  options?: string[];
+  components?: Component[];
 }
 
 export interface Note {
