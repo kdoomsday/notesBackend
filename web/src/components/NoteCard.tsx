@@ -11,6 +11,11 @@ import {
 } from '../api/client';
 import { serverErrorMessage } from '../i18n';
 import CategoryIcon from './CategoryIcon';
+import CompositeNoteText from './CompositeNoteText';
+
+function isCompositeNote(note: Note): boolean {
+  return note.category?.categoryType.type === 'Composite';
+}
 
 interface NoteCardProps {
   note: Note;
@@ -255,7 +260,11 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
           </button>
         </div>
       </div>
-      <p className="note-text">{note.text}</p>
+      {isCompositeNote(note) ? (
+        <CompositeNoteText text={note.text} />
+      ) : (
+        <p className="note-text">{note.text}</p>
+      )}
       {expanded && (
         <div className="note-details">
           <div className="note-detail">

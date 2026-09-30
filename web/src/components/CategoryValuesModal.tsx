@@ -10,6 +10,7 @@ import {
 } from '../api/client';
 import { serverErrorMessage } from '../i18n';
 import CategoryIcon from './CategoryIcon';
+import CompositeNoteText from './CompositeNoteText';
 import ValueChart, { type ValueChartPoint } from './ValueChart';
 
 interface CategoryValuesModalProps {
@@ -74,7 +75,10 @@ export default function CategoryValuesModal({
   const [graphType, setGraphType] = useState<GraphType>('line');
   const [error, setError] = useState('');
 
-  const categoryType = selected?.categoryType.type;
+  // Notes carry the type of the category they were created with, so read it
+  // from them instead of the category table, which may have changed since.
+  const noteCategory = values?.find((note) => note.category)?.category;
+  const categoryType = noteCategory?.categoryType.type ?? selected?.categoryType.type;
   const isNumeric = categoryType !== undefined && isNumericCategoryType(categoryType);
   const numberFormat = useMemo(
     () => (categoryType ? createNumberFormat(i18n.language, categoryType) : null),
@@ -228,7 +232,11 @@ export default function CategoryValuesModal({
             {values.map((note) => (
               <li key={note.id} className="value-item">
                 <span className="value-item-date">{formatDate(note.noteDate, i18n.language)}</span>
-                <span className="value-item-text">{note.text}</span>
+                {note.category?.categoryType.type === 'Composite' ? (
+                  <CompositeNoteText text={note.text} className="value-item-text" />
+                ) : (
+                  <span className="value-item-text">{note.text}</span>
+                )}
                 <span className="value-item-author">{operatorName(note.createdBy)}</span>
               </li>
             ))}

@@ -26,9 +26,13 @@ export interface TimeBlock {
   deleted: boolean;
 }
 
+/** The category as it was when the note was created, so notes keep their type
+ *  even after the category is renamed, deleted or changed. It carries no
+ *  `options`/`components`, so only the type can be read from it. */
 export interface NoteCategory {
   name: string;
   iconName: string;
+  categoryType: { type: CategoryType };
 }
 
 export const CATEGORY_TYPES = ['Numeric', 'Decimal', 'Text', 'Selection', 'Composite'] as const;

@@ -1184,12 +1184,16 @@ img.login-logo {
 .note-card-deleted .note-date,
 .note-card-deleted .note-author,
 .note-card-deleted .note-text,
+.note-card-deleted .composite-key,
+.note-card-deleted .composite-value,
 .note-card-deleted .note-detail-value,
 .note-card-deleted .note-card-toggle {
   opacity: 0.55;
 }
 
-.note-card-deleted .note-text {
+.note-card-deleted .note-text,
+.note-card-deleted .composite-key,
+.note-card-deleted .composite-value {
   text-decoration: line-through;
 }
 
@@ -1289,6 +1293,34 @@ img.login-logo {
   font-size: 15px;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* Composite notes: one key-value pair per line, both columns aligned. The key
+   column hugs the longest key instead of stretching to the cap, so short keys do
+   not float away from the values; the cap only stops one long key from pushing
+   the values out of a narrow card. */
+.composite-text {
+  margin: 0;
+  display: grid;
+  grid-template-columns: fit-content(min(20ch, 45%)) minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 4px;
+  align-items: baseline;
+  font-size: 15px;
+}
+
+.composite-key {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.composite-value {
+  margin: 0;
+  min-width: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
 }
 
 .note-details {
