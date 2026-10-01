@@ -837,6 +837,55 @@ img.login-logo {
   flex-shrink: 0;
 }
 
+/* ---- Patient notes ---- */
+
+.patient-note-text {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.patient-note-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 62px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 15px;
+  background: #fbfcfe;
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.patient-note-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.patient-note-add {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.patient-note-add .btn {
+  flex-shrink: 0;
+}
+
+.note-count-badge {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .role-badge {
   display: inline-flex;
   align-items: center;
@@ -894,7 +943,8 @@ img.login-logo {
 }
 
 .modal-wide {
-  max-width: 520px;
+  max-width: 920px;
+  width: min(920px, 95vw);
 }
 
 .permission-list {

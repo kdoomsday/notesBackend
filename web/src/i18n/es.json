@@ -54,6 +54,25 @@
     "deleteFailed": "No se pudo eliminar el paciente",
     "deleted": "Paciente eliminado"
   },
+  "patientNotes": {
+    "button": "Notas del paciente",
+    "title": "Notas de {{name}}",
+    "instructions": "Estas notas son generales del paciente y no pertenecen a ningún turno.",
+    "loadFailed": "No se pudieron cargar las notas del paciente",
+    "empty": "Este paciente todavía no tiene notas.",
+    "add": "Añadir nota",
+    "creating": "Añadiendo…",
+    "createFailed": "No se pudo añadir la nota",
+    "edit": "Editar nota",
+    "save": "Guardar nota",
+    "updateFailed": "No se pudo actualizar la nota",
+    "delete": "Eliminar nota",
+    "deleteFailed": "No se pudo eliminar la nota",
+    "reorderFailed": "No se pudo guardar el nuevo orden",
+    "moveUp": "Subir",
+    "moveDown": "Bajar",
+    "textPlaceholder": "Escribe una nota"
+  },
   "operators": {
     "title": "Operadores",
     "count_one": "{{count}} operador",

@@ -54,6 +54,25 @@
     "deleteFailed": "Could not delete patient",
     "deleted": "Patient deleted"
   },
+  "patientNotes": {
+    "button": "Patient notes",
+    "title": "Notes of {{name}}",
+    "instructions": "These notes are general to the patient and belong to no shift.",
+    "loadFailed": "Could not load the patient's notes",
+    "empty": "This patient has no notes yet.",
+    "add": "Add note",
+    "creating": "Adding…",
+    "createFailed": "Could not add the note",
+    "edit": "Edit note",
+    "save": "Save note",
+    "updateFailed": "Could not update the note",
+    "delete": "Delete note",
+    "deleteFailed": "Could not delete the note",
+    "reorderFailed": "Could not save the new order",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "textPlaceholder": "Write a note"
+  },
   "operators": {
     "title": "Operators",
     "count_one": "{{count}} operator",
