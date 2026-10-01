@@ -164,7 +164,7 @@
     "restoreFailed": "Could not restore category",
     "reorder": "Reorder",
     "reorderTitle": "Reorder categories",
-    "reorderInstructions": "Drag the categories to set their order.",
+    "reorderInstructions": "Drag the categories or use the arrows to set their order.",
     "reordering": "Saving order…",
     "reorderFailed": "Could not save the new order"
   },

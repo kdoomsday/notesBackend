@@ -820,6 +820,18 @@ img.login-logo {
   flex-shrink: 0;
 }
 
+.reorder-item .icon-btn {
+  cursor: pointer;
+}
+
+.reorder-item .icon-btn:active {
+  cursor: pointer;
+}
+
+.reorder-item .icon-btn svg {
+  color: var(--text-muted);
+}
+
 .reorder-drag-handle {
   color: var(--text-muted) !important;
   flex-shrink: 0;

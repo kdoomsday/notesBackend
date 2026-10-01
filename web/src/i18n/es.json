@@ -164,7 +164,7 @@
     "restoreFailed": "No se pudo restaurar la categoría",
     "reorder": "Reordenar",
     "reorderTitle": "Reordenar categorías",
-    "reorderInstructions": "Arrastra las categorías para establecer su orden.",
+    "reorderInstructions": "Arrastra las categorías o usa las flechas para establecer su orden.",
     "reordering": "Guardando orden…",
     "reorderFailed": "No se pudo guardar el nuevo orden"
   },
