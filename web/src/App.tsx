@@ -178,6 +178,9 @@ export default function App() {
       if (event.key !== 'Escape') return;
       const el = document.activeElement;
       if (el instanceof HTMLElement && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return;
+      /* Views close their own modals on Escape, so the selection is only reset
+       * once no modal is left open on top of it. */
+      if (document.querySelector('.modal-backdrop')) return;
       if (selectedShift) {
         setSelectedShift(null);
       } else if (selectedPatient) {
@@ -221,6 +224,9 @@ export default function App() {
       <Shifts
         me={me}
         patient={selectedPatient}
+        canListNotes={permissions === null || permissions.has('List Patient Notes')}
+        canSetNotes={permissions === null || permissions.has('Set Patient Notes')}
+        canDeleteNotes={permissions === null || permissions.has('Delete Patient Notes')}
         onBack={() => setSelectedPatient(null)}
         onPatientDeleted={handlePatientDeleted}
         onSelectShift={(shift, orderedShifts) => {

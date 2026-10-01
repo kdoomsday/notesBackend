@@ -207,6 +207,17 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
     setShowReorder(true);
   }
 
+  function moveOrder(index: number, offset: number) {
+    const target = index + offset;
+    if (target < 0 || target >= order.length) return;
+    setOrder((prev) => {
+      const next = prev.slice();
+      const [moved] = next.splice(index, 1);
+      next.splice(target, 0, moved);
+      return next;
+    });
+  }
+
   async function handleSaveOrder() {
     if (savingOrder) return;
     setReorderError('');
@@ -612,26 +623,74 @@ export default function Categories({ me, onLogout }: CategoriesProps) {
                     onDragEnd={() => setDraggedIndex(null)}
                   >
                     <CategoryIcon iconName={byName.get(name)?.iconName ?? ''} size={18} />
-                    <span className="operator-name">{byName.get(name)?.name ?? name}</span>
-                    <svg
-                      className="reorder-drag-handle"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <circle cx="9" cy="6" r="1" />
-                      <circle cx="15" cy="6" r="1" />
-                      <circle cx="9" cy="12" r="1" />
-                      <circle cx="15" cy="12" r="1" />
-                      <circle cx="9" cy="18" r="1" />
-                      <circle cx="15" cy="18" r="1" />
-                    </svg>
+            <span className="operator-name">{byName.get(name)?.name ?? name}</span>
+            {order.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="icon-btn icon-btn-sm"
+                  title={t('categories.moveUp')}
+                  aria-label={t('categories.moveUp')}
+                  disabled={savingOrder || index === 0}
+                  onClick={() => moveOrder(index, -1)}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m18 15-6-6-6 6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className="icon-btn icon-btn-sm"
+                  title={t('categories.moveDown')}
+                  aria-label={t('categories.moveDown')}
+                  disabled={savingOrder || index === order.length - 1}
+                  onClick={() => moveOrder(index, 1)}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+              </>
+            )}
+            <svg
+              className="reorder-drag-handle"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="9" cy="6" r="1" />
+              <circle cx="15" cy="6" r="1" />
+              <circle cx="9" cy="12" r="1" />
+              <circle cx="15" cy="12" r="1" />
+              <circle cx="9" cy="18" r="1" />
+              <circle cx="15" cy="18" r="1" />
+            </svg>
                   </li>
                 ))}
               </ul>

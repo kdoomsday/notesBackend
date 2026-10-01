@@ -89,6 +89,22 @@ export interface NotePhoto {
   createdAt: string;
 }
 
+/** A general note about a patient, outside of any shift. `notes` holds the
+ *  text itself. Notes are listed and reordered by `sortOrder`. */
+export interface PatientNote {
+  id: number;
+  patientId: string;
+  notes: string;
+  sortOrder: number;
+  updatedByUser: number;
+  deleted: boolean;
+}
+
+export interface PatientNoteInput {
+  notes: string;
+  sortOrder: number;
+}
+
 export interface NoteUpdate {
   id: number;
   noteId: string;
@@ -268,6 +284,24 @@ export const authApi = {
     createPatient: (name: string) =>
         api<Patient>('/api/patients', { method: 'POST', body: JSON.stringify({ name }) }),
     deletePatient: (id: string) => api<unknown>(`/api/patients/${id}`, { method: 'DELETE' }),
+    patientNotes: (patientId: string) => api<PatientNote[]>(`/api/patients/${patientId}/notes`),
+    createPatientNote: (patientId: string, note: PatientNoteInput) =>
+        api<PatientNote>(`/api/patients/${patientId}/notes`, {
+            method: 'POST',
+            body: JSON.stringify(note),
+        }),
+    updatePatientNote: (patientId: string, noteId: number, note: PatientNoteInput) =>
+        api<PatientNote>(`/api/patients/${patientId}/notes/${noteId}`, {
+            method: 'PUT',
+            body: JSON.stringify(note),
+        }),
+    deletePatientNote: (patientId: string, noteId: number) =>
+        api<unknown>(`/api/patients/${patientId}/notes/${noteId}`, { method: 'DELETE' }),
+    reorderPatientNotes: (patientId: string, noteIds: number[]) =>
+        api<unknown>(`/api/patients/${patientId}/notes/reorder`, {
+            method: 'PUT',
+            body: JSON.stringify(noteIds),
+        }),
     shifts: () => api<Shift[]>('/api/shifts'),
     timeBlocks: () => api<TimeBlock[]>('/api/time-blocks'),
     notes: () => api<Note[]>('/api/notes'),

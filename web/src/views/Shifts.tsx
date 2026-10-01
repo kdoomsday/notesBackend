@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, authApi, type Me, type Patient, type Shift, type TimeBlock } from '../api/client';
 import { serverErrorMessage } from '../i18n';
 import BackLink from '../components/BackLink';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import PatientNotesModal from '../components/PatientNotesModal';
 
 interface ShiftsProps {
   me: Me;
   patient: Patient;
+  canListNotes: boolean;
+  canSetNotes: boolean;
+  canDeleteNotes: boolean;
   onBack: () => void;
   onPatientDeleted: () => void;
   onSelectShift: (shift: Shift, orderedShifts: Shift[]) => void;
@@ -50,14 +54,46 @@ function shiftComparer(timeBlocks: TimeBlock[], dateDirection: 1 | -1) {
   };
 }
 
-export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelectShift, onLogout }: ShiftsProps) {
+export default function Shifts({
+  me,
+  patient,
+  canListNotes,
+  canSetNotes,
+  canDeleteNotes,
+  onBack,
+  onPatientDeleted,
+  onSelectShift,
+  onLogout,
+}: ShiftsProps) {
   const { t, i18n } = useTranslation();
   const [shifts, setShifts] = useState<Shift[] | null>(null);
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([]);
   const [error, setError] = useState('');
   const [showDelete, setShowDelete] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [noteCount, setNoteCount] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+
+  const loadNoteCount = useCallback(() => {
+    if (!canListNotes) {
+      setNoteCount(null);
+      return;
+    }
+    authApi
+      .patientNotes(patient.id)
+      .then((list) => setNoteCount(list.length))
+      .catch(() => setNoteCount(null));
+  }, [canListNotes, patient.id]);
+
+  useEffect(() => {
+    loadNoteCount();
+  }, [loadNoteCount]);
+
+  function closeNotes() {
+    setShowNotes(false);
+    loadNoteCount();
+  }
 
   useEffect(() => {
     if (!showDelete) return;
@@ -189,9 +225,24 @@ export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelect
             <h2>{patient.name}</h2>
             <p className="section-subtitle">{t('shifts.title')} · {t('shifts.count', { count: patientShifts.length })}</p>
           </div>
-          <button type="button" className="btn btn-danger" onClick={openDelete}>
-            {t('patients.delete')}
-          </button>
+          <div className="section-head-actions">
+            {canListNotes && (
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setShowNotes(true)}
+                title={t('patientNotes.button')}
+              >
+                {t('patientNotes.button')}
+                {noteCount !== null && noteCount > 0 && (
+                  <span className="note-count-badge">{noteCount}</span>
+                )}
+              </button>
+            )}
+            <button type="button" className="btn btn-danger" onClick={openDelete}>
+              {t('patients.delete')}
+            </button>
+          </div>
         </div>
         {error && <div className="error app-error">{error}</div>}
         {shifts === null ? (
@@ -260,6 +311,15 @@ export default function Shifts({ me, patient, onBack, onPatientDeleted, onSelect
               </div>
             </div>
           </div>
+        )}
+        {showNotes && (
+          <PatientNotesModal
+            patientId={patient.id}
+            patientName={patient.name}
+            canSet={canSetNotes}
+            canDelete={canDeleteNotes}
+            onClose={closeNotes}
+          />
         )}
       </main>
     </div>
