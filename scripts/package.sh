@@ -16,9 +16,9 @@ echo "==> building ($PKG_NAME $VERSION)"
 npm run build
 
 echo "==> staging archive"
-mkdir -p "$STAGE/$PKG_DIR" "$ROOT/dist/releases"
+mkdir -p "$STAGE/$PKG_DIR/dist/server" "$ROOT/dist/releases"
 
-cp -a dist "$STAGE/$PKG_DIR/dist"
+cp -a dist/server/. "$STAGE/$PKG_DIR/dist/server/"
 cp -a web "$STAGE/$PKG_DIR/web"
 cp package.json package-lock.json "$STAGE/$PKG_DIR/"
 cp notes-web.service install.sh "$STAGE/$PKG_DIR/"
