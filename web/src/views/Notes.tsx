@@ -83,15 +83,15 @@ export default function Notes({
     let source: EventSource | null = null;
     let cancelled = false;
 
-    Promise.all([authApi.notes(), authApi.timeBlocks(), authApi.operators()])
-      .then(([allNotes, blocks, ops]) => {
+    Promise.all([authApi.notesByShift(shift.id, true), authApi.timeBlocks(), authApi.operators()])
+      .then(([shiftNotes, blocks, ops]) => {
         if (cancelled) return;
-        setNotes(allNotes.filter((n) => n.shiftId === shift.id));
+        setNotes(shiftNotes);
         setTimeBlocks(blocks.filter((b) => !b.deleted));
         setOperators(ops);
 
         const since =
-          allNotes.reduce((max, n) => (n.updatedAt > max ? n.updatedAt : max), '') ||
+          shiftNotes.reduce((max, n) => (n.updatedAt > max ? n.updatedAt : max), '') ||
           new Date(0).toISOString();
         source = new EventSource(`/api/notes/stream?since=${encodeURIComponent(since)}`);
         source.addEventListener('note', (event) => {

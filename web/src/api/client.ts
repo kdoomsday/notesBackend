@@ -305,7 +305,9 @@ export const authApi = {
         }),
     shifts: () => api<Shift[]>('/api/shifts'),
     timeBlocks: () => api<TimeBlock[]>('/api/time-blocks'),
-    notes: () => api<Note[]>('/api/notes'),
+    /** `showDeleted` also returns soft-deleted notes so the view can reveal them. */
+    notesByShift: (shiftId: string, showDeleted = false) =>
+        api<Note[]>(`/api/notes/shift/${encodeURIComponent(shiftId)}?showDeleted=${showDeleted}`),
     lastNotesByCategory: (patientId: string, categoryName: string, amount: number) =>
         api<Note[]>(`/api/notes/last/${patientId}/${encodeURIComponent(categoryName)}/${amount}`),
     notePhotos: (noteId: string) => api<NotePhoto[]>(`/api/notes/${noteId}/photos`),
