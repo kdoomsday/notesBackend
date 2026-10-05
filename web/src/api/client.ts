@@ -108,7 +108,8 @@ export interface PatientNoteInput {
 export interface NoteUpdate {
   id: number;
   noteId: string;
-  updatedBy: number;
+  updatedByOperator: number;
+  updatedByUser: number;
   updatedAt: string;
   changes: string;
 }

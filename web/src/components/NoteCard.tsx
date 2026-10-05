@@ -355,7 +355,7 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
                   <li key={entry.id} className="history-item">
                     <span className="history-item-meta">
                       {formatDateTime(entry.updatedAt, i18n.language)} ·{' '}
-                      {operatorName(entry.updatedBy) || t('notes.unknownAuthor')}
+                      {operatorName(entry.updatedByOperator) || t('notes.unknownAuthor')}
                     </span>
                     <span className="history-item-changes">{entry.changes}</span>
                   </li>

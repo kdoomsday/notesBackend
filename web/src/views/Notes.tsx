@@ -88,7 +88,7 @@ export default function Notes({
         if (cancelled) return;
         setNotes(allNotes.filter((n) => n.shiftId === shift.id));
         setTimeBlocks(blocks.filter((b) => !b.deleted));
-        setOperators(ops.filter((o) => !o.deleted));
+        setOperators(ops);
 
         const since =
           allNotes.reduce((max, n) => (n.updatedAt > max ? n.updatedAt : max), '') ||
