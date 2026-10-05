@@ -1,6 +1,6 @@
 import { Fragment, useMemo } from 'react';
 
-interface Pair {
+export interface Pair {
   key: string;
   value: string;
 }

@@ -1492,10 +1492,28 @@ img.login-logo {
   font-weight: 600;
 }
 
-.history-item-changes {
+.history-changes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   font-size: 14px;
+}
+
+.history-change-message {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.history-change-text {
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* A row an edit actually touched. The value is tinted rather than given a
+   background so the grid's column gap does not cut the highlight in two. */
+.history-change-changed {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 /* ---- Category values ---- */

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ApiError,
@@ -9,6 +9,7 @@ import {
   type NotePhoto,
   type NoteUpdate,
 } from '../api/client';
+import { parseHistory, type ChangeLogBlock } from '../changeLog';
 import { serverErrorMessage } from '../i18n';
 import CategoryIcon from './CategoryIcon';
 import CompositeNoteText from './CompositeNoteText';
@@ -94,6 +95,60 @@ function HistoryIcon() {
   );
 }
 
+/** Labelled rows sit side by side in one grid, so consecutive ones share a group. */
+function groupBlocks(blocks: ChangeLogBlock[]): ChangeLogBlock[][] {
+  const groups: ChangeLogBlock[][] = [];
+  for (const block of blocks) {
+    const current = groups[groups.length - 1];
+    if (block.kind === 'field' && current && current[0].kind === 'field') {
+      current.push(block);
+    } else {
+      groups.push([block]);
+    }
+  }
+  return groups;
+}
+
+function ChangeBlocks({ blocks }: { blocks: ChangeLogBlock[] }) {
+  return (
+    <div className="history-changes">
+      {groupBlocks(blocks).map((group, index) => {
+        const first = group[0];
+        if (first.kind === 'message') {
+          return (
+            <span key={index} className="history-change-message">
+              {first.text}
+            </span>
+          );
+        }
+        if (first.kind === 'text') {
+          return (
+            <span key={index} className="history-change-text">
+              {first.text}
+            </span>
+          );
+        }
+        return (
+          <dl key={index} className="composite-text">
+            {group.map((block, position) =>
+              block.kind === 'field' ? (
+                <Fragment key={position}>
+                  <dt className={`composite-key${block.changed ? ' history-change-changed' : ''}`}>
+                    {block.label}
+                  </dt>
+                  <dd className={`composite-value${block.changed ? ' history-change-changed' : ''}`}>
+                    {block.value}
+                  </dd>
+                </Fragment>
+              ) : null
+            )}
+          </dl>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function NoteCard({ note, authorName, operatorName, onLogout }: NoteCardProps) {
   const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(false);
@@ -106,6 +161,8 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<NoteUpdate[] | null>(null);
   const [historyError, setHistoryError] = useState('');
+
+  const historyChanges = useMemo(() => parseHistory(history ?? [], t), [history, t]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -351,13 +408,13 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
               <p className="modal-text">{t('notes.noHistory')}</p>
             ) : (
               <ul className="history-list">
-                {history.map((entry) => (
-                  <li key={entry.id} className="history-item">
+                {historyChanges.map((change) => (
+                  <li key={change.update.id} className="history-item">
                     <span className="history-item-meta">
-                      {formatDateTime(entry.updatedAt, i18n.language)} ·{' '}
-                      {operatorName(entry.updatedByOperator) || t('notes.unknownAuthor')}
+                      {formatDateTime(change.update.updatedAt, i18n.language)} ·{' '}
+                      {operatorName(change.update.updatedByOperator) || t('notes.unknownAuthor')}
                     </span>
-                    <span className="history-item-changes">{entry.changes}</span>
+                    <ChangeBlocks blocks={change.blocks} />
                   </li>
                 ))}
               </ul>

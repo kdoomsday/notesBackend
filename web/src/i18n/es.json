@@ -293,7 +293,13 @@
     "chartAria": "Gráfico de {{count}} valores",
     "chooseCategory": "Elige una categoría",
     "backToCategories": "Volver a categorías",
-    "noValues": "Todavía no hay valores para esta categoría."
+    "noValues": "Todavía no hay valores para esta categoría.",
+    "changes": {
+      "created": "Creada",
+      "deleted": "Eliminada",
+      "restored": "Restaurada",
+      "category": "Categoría"
+    }
   },
   "errors": {
     "signInFailed": "No se pudo iniciar sesión",
