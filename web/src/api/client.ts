@@ -9,6 +9,24 @@ export interface Patient {
   deleted: boolean;
 }
 
+/** Extra demographic data of a patient, stored apart from the patient itself.
+ *  `null` from the API means the patient has no info yet. */
+export interface PatientInfo {
+  id: number;
+  patientId: string;
+  names: string;
+  lastNames: string;
+  historyNumber: string;
+  updatedAt: string;
+  deleted?: boolean;
+}
+
+export interface PatientInfoInput {
+  names: string;
+  lastNames: string;
+  historyNumber: string;
+}
+
 export interface Shift {
   id: string;
   patientId: string;
@@ -285,6 +303,13 @@ export const authApi = {
     createPatient: (name: string) =>
         api<Patient>('/api/patients', { method: 'POST', body: JSON.stringify({ name }) }),
     deletePatient: (id: string) => api<unknown>(`/api/patients/${id}`, { method: 'DELETE' }),
+    patientInfo: (patientId: string) => api<PatientInfo | null>(`/api/patients/${patientId}/info`),
+    /** Creates or updates the extra info of a patient. */
+    savePatientInfo: (patientId: string, info: PatientInfoInput) =>
+        api<PatientInfo>(`/api/patients/${patientId}/info`, {
+            method: 'PUT',
+            body: JSON.stringify(info),
+        }),
     patientNotes: (patientId: string) => api<PatientNote[]>(`/api/patients/${patientId}/notes`),
     createPatientNote: (patientId: string, note: PatientNoteInput) =>
         api<PatientNote>(`/api/patients/${patientId}/notes`, {
