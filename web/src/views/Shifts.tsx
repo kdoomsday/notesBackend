@@ -4,6 +4,7 @@ import { ApiError, authApi, type Me, type Patient, type PatientInfo, type Shift,
 import { serverErrorMessage } from '../i18n';
 import BackLink from '../components/BackLink';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import PatientHeader from '../components/PatientHeader';
 import PatientNotesModal from '../components/PatientNotesModal';
 
 interface ShiftsProps {
@@ -292,15 +293,6 @@ export default function Shifts({
     onLogout();
   }
 
-  const infoLine = info
-    ? [
-        [info.names, info.lastNames].filter(Boolean).join(' '),
-        info.historyNumber ? t('patients.historyNumberValue', { value: info.historyNumber }) : '',
-      ]
-        .filter(Boolean)
-        .join(' · ')
-    : '';
-
   return (
     <div className="view">
       <header className="app-header">
@@ -322,12 +314,12 @@ export default function Shifts({
         </div>
       </header>
       <main className="app-main">
+        <PatientHeader patient={patient} info={info} />
         <BackLink label={t('shifts.backToPatients')} onClick={onBack} />
         <div className="section-head section-head-row">
           <div>
-            <h2>{patient.name}</h2>
-            {infoLine && <p className="patient-detail">{infoLine}</p>}
-            <p className="section-subtitle">{t('shifts.title')} · {t('shifts.count', { count: patientShifts.length })}</p>
+            <h2>{t('shifts.title')}</h2>
+            <p className="section-subtitle">{t('shifts.count', { count: patientShifts.length })}</p>
           </div>
           <div className="section-head-actions">
             {canListNotes && (
