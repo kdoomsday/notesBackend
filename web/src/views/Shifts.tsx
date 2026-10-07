@@ -314,7 +314,7 @@ export default function Shifts({
         </div>
       </header>
       <main className="app-main">
-        <PatientHeader patient={patient} info={info} />
+        <PatientHeader patient={patient} info={info} onEdit={openEditInfo} />
         <BackLink label={t('shifts.backToPatients')} onClick={onBack} />
         <div className="section-head section-head-row">
           <div>
@@ -337,13 +337,9 @@ export default function Shifts({
             )}
             <button
               type="button"
-              className="btn btn-ghost"
-              onClick={openEditInfo}
-              title={t('patients.editInfo')}
+              className="btn btn-danger"
+              onClick={openDelete}
             >
-              {t('patients.editInfo')}
-            </button>
-            <button type="button" className="btn btn-danger" onClick={openDelete}>
               {t('patients.delete')}
             </button>
           </div>
