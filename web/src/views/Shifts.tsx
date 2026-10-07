@@ -84,6 +84,7 @@ export default function Shifts({
   const [editHistoryNumber, setEditHistoryNumber] = useState('');
   const [savingInfo, setSavingInfo] = useState(false);
   const [editInfoError, setEditInfoError] = useState('');
+  const [editDirty, setEditDirty] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -227,9 +228,19 @@ export default function Shifts({
     setEditNames(info?.names ?? '');
     setEditLastNames(info?.lastNames ?? '');
     setEditHistoryNumber(info?.historyNumber ?? '');
+    setEditDirty(false);
     setEditInfoError('');
     setShowEditInfo(true);
   }
+
+  // The info may still be loading when the user opens the modal, so prefill the
+  // fields as soon as it arrives. Once the user starts typing, their input wins.
+  useEffect(() => {
+    if (!showEditInfo || editDirty) return;
+    setEditNames(info?.names ?? '');
+    setEditLastNames(info?.lastNames ?? '');
+    setEditHistoryNumber(info?.historyNumber ?? '');
+  }, [showEditInfo, info, editDirty]);
 
   async function handleSaveInfo(event: FormEvent) {
     event.preventDefault();
@@ -443,7 +454,10 @@ export default function Shifts({
                   <input
                     type="text"
                     value={editNames}
-                    onChange={(e) => setEditNames(e.target.value)}
+                    onChange={(e) => {
+                      setEditNames(e.target.value);
+                      setEditDirty(true);
+                    }}
                     placeholder={t('patients.namesPlaceholder')}
                     disabled={savingInfo}
                     required
@@ -454,7 +468,10 @@ export default function Shifts({
                   <input
                     type="text"
                     value={editLastNames}
-                    onChange={(e) => setEditLastNames(e.target.value)}
+                    onChange={(e) => {
+                      setEditLastNames(e.target.value);
+                      setEditDirty(true);
+                    }}
                     placeholder={t('patients.lastNamesPlaceholder')}
                     disabled={savingInfo}
                     required
@@ -465,7 +482,10 @@ export default function Shifts({
                   <input
                     type="text"
                     value={editHistoryNumber}
-                    onChange={(e) => setEditHistoryNumber(e.target.value)}
+                    onChange={(e) => {
+                      setEditHistoryNumber(e.target.value);
+                      setEditDirty(true);
+                    }}
                     placeholder={t('patients.historyNumberPlaceholder')}
                     disabled={savingInfo}
                     required
