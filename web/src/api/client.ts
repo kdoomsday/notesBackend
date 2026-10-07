@@ -9,10 +9,10 @@ export interface Patient {
   deleted: boolean;
 }
 
-/** Extra demographic data of a patient, stored apart from the patient itself.
- *  `null` from the API means the patient has no info yet. */
+/** Extra data of a patient. Since it is created and updated
+ *  together with the patient itself, the patient endpoints carry these fields.
+ *  `null` from `patientInfo()` means the patient has no info yet. */
 export interface PatientInfo {
-  id: number;
   patientId: string;
   names: string;
   lastNames: string;
@@ -21,7 +21,9 @@ export interface PatientInfo {
   deleted?: boolean;
 }
 
-export interface PatientInfoInput {
+/** Payload to create or update a patient: the display `name` plus its info. */
+export interface PatientInput {
+  displayName: string;
   names: string;
   lastNames: string;
   historyNumber: string;
@@ -300,16 +302,12 @@ export const authApi = {
     },
     apkVersion: (): Promise<string> => fetchText('/apk/version'),
     patients: () => api<Patient[]>('/api/patients'),
-    createPatient: (name: string) =>
-        api<Patient>('/api/patients', { method: 'POST', body: JSON.stringify({ name }) }),
+    createPatient: (data: PatientInput) =>
+        api<Patient>('/api/patients', { method: 'POST', body: JSON.stringify(data) }),
+    updatePatient: (id: string, data: PatientInput) =>
+        api<Patient>(`/api/patients/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     deletePatient: (id: string) => api<unknown>(`/api/patients/${id}`, { method: 'DELETE' }),
     patientInfo: (patientId: string) => api<PatientInfo | null>(`/api/patients/${patientId}/info`),
-    /** Creates or updates the extra info of a patient. */
-    savePatientInfo: (patientId: string, info: PatientInfoInput) =>
-        api<PatientInfo>(`/api/patients/${patientId}/info`, {
-            method: 'PUT',
-            body: JSON.stringify(info),
-        }),
     patientNotes: (patientId: string) => api<PatientNote[]>(`/api/patients/${patientId}/notes`),
     createPatientNote: (patientId: string, note: PatientNoteInput) =>
         api<PatientNote>(`/api/patients/${patientId}/notes`, {

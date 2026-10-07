@@ -96,20 +96,23 @@ export default function Patients({ me, onLogout, onSelectPatient }: PatientsProp
     setCreateError('');
     setCreating(true);
     try {
-      const created = await authApi.createPatient(name);
-      try {
-        const info = await authApi.savePatientInfo(created.id, {
+      const created = await authApi.createPatient({
+        displayName: name,
+        names,
+        lastNames,
+        historyNumber,
+      });
+      setInfoByPatient((prev) => ({
+        ...prev,
+        [created.id]: {
+          patientId: created.id,
           names,
           lastNames,
           historyNumber,
-        });
-        setInfoByPatient((prev) => ({ ...prev, [created.id]: info }));
-      } catch (infoErr) {
-        // A patient must always carry its info, so drop it again instead of
-        // leaving a half-created record behind.
-        await authApi.deletePatient(created.id).catch(() => undefined);
-        throw infoErr;
-      }
+          updatedAt: created.updatedAt,
+          deleted: false,
+        },
+      }));
       setPatients((prev) => (prev ? [...prev, created] : [created]));
       setNewName('');
       setNewNames('');

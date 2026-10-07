@@ -14,6 +14,7 @@ interface ShiftsProps {
   canDeleteNotes: boolean;
   onBack: () => void;
   onPatientDeleted: () => void;
+  onPatientUpdated: (patient: Patient) => void;
   onSelectShift: (shift: Shift, orderedShifts: Shift[]) => void;
   onLogout: () => void;
 }
@@ -62,6 +63,7 @@ export default function Shifts({
   canDeleteNotes,
   onBack,
   onPatientDeleted,
+  onPatientUpdated,
   onSelectShift,
   onLogout,
 }: ShiftsProps) {
@@ -76,6 +78,7 @@ export default function Shifts({
   const [deleteError, setDeleteError] = useState('');
   const [info, setInfo] = useState<PatientInfo | null>(null);
   const [showEditInfo, setShowEditInfo] = useState(false);
+  const [editName, setEditName] = useState('');
   const [editNames, setEditNames] = useState('');
   const [editLastNames, setEditLastNames] = useState('');
   const [editHistoryNumber, setEditHistoryNumber] = useState('');
@@ -220,6 +223,7 @@ export default function Shifts({
   }
 
   function openEditInfo() {
+    setEditName(patient.name);
     setEditNames(info?.names ?? '');
     setEditLastNames(info?.lastNames ?? '');
     setEditHistoryNumber(info?.historyNumber ?? '');
@@ -229,23 +233,37 @@ export default function Shifts({
 
   async function handleSaveInfo(event: FormEvent) {
     event.preventDefault();
+    const displayName = editName.trim();
     const names = editNames.trim();
     const lastNames = editLastNames.trim();
     const historyNumber = editHistoryNumber.trim();
-    if (!names || !lastNames || !historyNumber || savingInfo) return;
+    if (!displayName || !names || !lastNames || !historyNumber || savingInfo) return;
     setEditInfoError('');
     setSavingInfo(true);
     try {
-      const saved = await authApi.savePatientInfo(patient.id, {
+      const saved = await authApi.updatePatient(patient.id, {
+        displayName,
         names,
         lastNames,
         historyNumber,
       });
-      setInfo(saved);
+      setInfo({
+        patientId: patient.id,
+        names,
+        lastNames,
+        historyNumber,
+        updatedAt: saved.updatedAt,
+        deleted: false,
+      });
       setShowEditInfo(false);
+      onPatientUpdated(saved);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setEditInfoError(t('errors.unauthorized'));
+        return;
+      }
+      if (err instanceof ApiError && err.status === 409) {
+        setEditInfoError(t('patients.alreadyExists'));
         return;
       }
       setEditInfoError(serverErrorMessage(err) || t('patients.saveInfoFailed'));
@@ -409,13 +427,24 @@ export default function Shifts({
               </h3>
               <form onSubmit={handleSaveInfo}>
                 <label className="field">
+                  <span>{t('patients.name')}</span>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder={t('patients.namePlaceholder')}
+                    autoFocus
+                    disabled={savingInfo}
+                    required
+                  />
+                </label>
+                <label className="field">
                   <span>{t('patients.names')}</span>
                   <input
                     type="text"
                     value={editNames}
                     onChange={(e) => setEditNames(e.target.value)}
                     placeholder={t('patients.namesPlaceholder')}
-                    autoFocus
                     disabled={savingInfo}
                     required
                   />
@@ -455,7 +484,7 @@ export default function Shifts({
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    disabled={savingInfo || !editNames.trim() || !editLastNames.trim() || !editHistoryNumber.trim()}
+                    disabled={savingInfo || !editName.trim() || !editNames.trim() || !editLastNames.trim() || !editHistoryNumber.trim()}
                   >
                     {savingInfo ? t('patients.savingInfo') : t('patients.saveInfo')}
                   </button>

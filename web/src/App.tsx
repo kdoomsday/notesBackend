@@ -229,6 +229,7 @@ export default function App() {
         canDeleteNotes={permissions === null || permissions.has('Delete Patient Notes')}
         onBack={() => setSelectedPatient(null)}
         onPatientDeleted={handlePatientDeleted}
+        onPatientUpdated={setSelectedPatient}
         onSelectShift={(shift, orderedShifts) => {
           setSelectedShift(shift);
           setSelectedShiftList(orderedShifts);
