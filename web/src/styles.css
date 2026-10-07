@@ -515,6 +515,12 @@ img.login-logo {
   font-size: 14px;
 }
 
+.patient-detail {
+  margin: 4px 0 0;
+  color: var(--text);
+  font-size: 14px;
+}
+
 .patients-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));

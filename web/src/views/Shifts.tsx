@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ApiError, authApi, type Me, type Patient, type Shift, type TimeBlock } from '../api/client';
+import { ApiError, authApi, type Me, type Patient, type PatientInfo, type Shift, type TimeBlock } from '../api/client';
 import { serverErrorMessage } from '../i18n';
 import BackLink from '../components/BackLink';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -14,6 +14,7 @@ interface ShiftsProps {
   canDeleteNotes: boolean;
   onBack: () => void;
   onPatientDeleted: () => void;
+  onPatientUpdated: (patient: Patient) => void;
   onSelectShift: (shift: Shift, orderedShifts: Shift[]) => void;
   onLogout: () => void;
 }
@@ -62,6 +63,7 @@ export default function Shifts({
   canDeleteNotes,
   onBack,
   onPatientDeleted,
+  onPatientUpdated,
   onSelectShift,
   onLogout,
 }: ShiftsProps) {
@@ -74,6 +76,29 @@ export default function Shifts({
   const [noteCount, setNoteCount] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [info, setInfo] = useState<PatientInfo | null>(null);
+  const [showEditInfo, setShowEditInfo] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editNames, setEditNames] = useState('');
+  const [editLastNames, setEditLastNames] = useState('');
+  const [editHistoryNumber, setEditHistoryNumber] = useState('');
+  const [savingInfo, setSavingInfo] = useState(false);
+  const [editInfoError, setEditInfoError] = useState('');
+  const [editDirty, setEditDirty] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setInfo(null);
+    authApi
+      .patientInfo(patient.id)
+      .then((data) => {
+        if (!cancelled) setInfo(data);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [patient.id]);
 
   const loadNoteCount = useCallback(() => {
     if (!canListNotes) {
@@ -103,6 +128,15 @@ export default function Shifts({
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [showDelete]);
+
+  useEffect(() => {
+    if (!showEditInfo) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setShowEditInfo(false);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [showEditInfo]);
 
   useEffect(() => {
     let source: EventSource | null = null;
@@ -189,6 +223,66 @@ export default function Shifts({
     }
   }
 
+  function openEditInfo() {
+    setEditName(patient.name);
+    setEditNames(info?.names ?? '');
+    setEditLastNames(info?.lastNames ?? '');
+    setEditHistoryNumber(info?.historyNumber ?? '');
+    setEditDirty(false);
+    setEditInfoError('');
+    setShowEditInfo(true);
+  }
+
+  // The info may still be loading when the user opens the modal, so prefill the
+  // fields as soon as it arrives. Once the user starts typing, their input wins.
+  useEffect(() => {
+    if (!showEditInfo || editDirty) return;
+    setEditNames(info?.names ?? '');
+    setEditLastNames(info?.lastNames ?? '');
+    setEditHistoryNumber(info?.historyNumber ?? '');
+  }, [showEditInfo, info, editDirty]);
+
+  async function handleSaveInfo(event: FormEvent) {
+    event.preventDefault();
+    const displayName = editName.trim();
+    const names = editNames.trim();
+    const lastNames = editLastNames.trim();
+    const historyNumber = editHistoryNumber.trim();
+    if (!displayName || !names || !lastNames || !historyNumber || savingInfo) return;
+    setEditInfoError('');
+    setSavingInfo(true);
+    try {
+      const saved = await authApi.updatePatient(patient.id, {
+        displayName,
+        names,
+        lastNames,
+        historyNumber,
+      });
+      setInfo({
+        patientId: patient.id,
+        names,
+        lastNames,
+        historyNumber,
+        updatedAt: saved.updatedAt,
+        deleted: false,
+      });
+      setShowEditInfo(false);
+      onPatientUpdated(saved);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setEditInfoError(t('errors.unauthorized'));
+        return;
+      }
+      if (err instanceof ApiError && err.status === 409) {
+        setEditInfoError(t('patients.alreadyExists'));
+        return;
+      }
+      setEditInfoError(serverErrorMessage(err) || t('patients.saveInfoFailed'));
+    } finally {
+      setSavingInfo(false);
+    }
+  }
+
   async function handleLogout() {
     try {
       await authApi.logout();
@@ -197,6 +291,15 @@ export default function Shifts({
     }
     onLogout();
   }
+
+  const infoLine = info
+    ? [
+        [info.names, info.lastNames].filter(Boolean).join(' '),
+        info.historyNumber ? t('patients.historyNumberValue', { value: info.historyNumber }) : '',
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : '';
 
   return (
     <div className="view">
@@ -223,6 +326,7 @@ export default function Shifts({
         <div className="section-head section-head-row">
           <div>
             <h2>{patient.name}</h2>
+            {infoLine && <p className="patient-detail">{infoLine}</p>}
             <p className="section-subtitle">{t('shifts.title')} · {t('shifts.count', { count: patientShifts.length })}</p>
           </div>
           <div className="section-head-actions">
@@ -239,6 +343,14 @@ export default function Shifts({
                 )}
               </button>
             )}
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={openEditInfo}
+              title={t('patients.editInfo')}
+            >
+              {t('patients.editInfo')}
+            </button>
             <button type="button" className="btn btn-danger" onClick={openDelete}>
               {t('patients.delete')}
             </button>
@@ -309,6 +421,95 @@ export default function Shifts({
                   {deleting ? t('patients.deleting') : t('patients.delete')}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+        {showEditInfo && (
+          <div className="modal-backdrop" onClick={() => setShowEditInfo(false)}>
+            <div
+              className="modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="edit-info-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h3 id="edit-info-title" className="modal-title">
+                {t('patients.editInfoTitle')}
+              </h3>
+              <form onSubmit={handleSaveInfo}>
+                <label className="field">
+                  <span>{t('patients.name')}</span>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder={t('patients.namePlaceholder')}
+                    autoFocus
+                    disabled={savingInfo}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>{t('patients.names')}</span>
+                  <input
+                    type="text"
+                    value={editNames}
+                    onChange={(e) => {
+                      setEditNames(e.target.value);
+                      setEditDirty(true);
+                    }}
+                    placeholder={t('patients.namesPlaceholder')}
+                    disabled={savingInfo}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>{t('patients.lastNames')}</span>
+                  <input
+                    type="text"
+                    value={editLastNames}
+                    onChange={(e) => {
+                      setEditLastNames(e.target.value);
+                      setEditDirty(true);
+                    }}
+                    placeholder={t('patients.lastNamesPlaceholder')}
+                    disabled={savingInfo}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  <span>{t('patients.historyNumber')}</span>
+                  <input
+                    type="text"
+                    value={editHistoryNumber}
+                    onChange={(e) => {
+                      setEditHistoryNumber(e.target.value);
+                      setEditDirty(true);
+                    }}
+                    placeholder={t('patients.historyNumberPlaceholder')}
+                    disabled={savingInfo}
+                    required
+                  />
+                </label>
+                {editInfoError && <p className="error modal-error">{editInfoError}</p>}
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setShowEditInfo(false)}
+                    disabled={savingInfo}
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={savingInfo || !editName.trim() || !editNames.trim() || !editLastNames.trim() || !editHistoryNumber.trim()}
+                  >
+                    {savingInfo ? t('patients.savingInfo') : t('patients.saveInfo')}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

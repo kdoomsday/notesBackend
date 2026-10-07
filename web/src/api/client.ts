@@ -9,6 +9,26 @@ export interface Patient {
   deleted: boolean;
 }
 
+/** Extra data of a patient. Since it is created and updated
+ *  together with the patient itself, the patient endpoints carry these fields.
+ *  `null` from `patientInfo()` means the patient has no info yet. */
+export interface PatientInfo {
+  patientId: string;
+  names: string;
+  lastNames: string;
+  historyNumber: string;
+  updatedAt: string;
+  deleted?: boolean;
+}
+
+/** Payload to create or update a patient: the display `name` plus its info. */
+export interface PatientInput {
+  displayName: string;
+  names: string;
+  lastNames: string;
+  historyNumber: string;
+}
+
 export interface Shift {
   id: string;
   patientId: string;
@@ -282,9 +302,12 @@ export const authApi = {
     },
     apkVersion: (): Promise<string> => fetchText('/apk/version'),
     patients: () => api<Patient[]>('/api/patients'),
-    createPatient: (name: string) =>
-        api<Patient>('/api/patients', { method: 'POST', body: JSON.stringify({ name }) }),
+    createPatient: (data: PatientInput) =>
+        api<Patient>('/api/patients', { method: 'POST', body: JSON.stringify(data) }),
+    updatePatient: (id: string, data: PatientInput) =>
+        api<Patient>(`/api/patients/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     deletePatient: (id: string) => api<unknown>(`/api/patients/${id}`, { method: 'DELETE' }),
+    patientInfo: (patientId: string) => api<PatientInfo | null>(`/api/patients/${patientId}/info`),
     patientNotes: (patientId: string) => api<PatientNote[]>(`/api/patients/${patientId}/notes`),
     createPatientNote: (patientId: string, note: PatientNoteInput) =>
         api<PatientNote>(`/api/patients/${patientId}/notes`, {
