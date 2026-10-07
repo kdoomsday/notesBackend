@@ -73,6 +73,7 @@ export default function CategoryValuesModal({
   const [values, setValues] = useState<Note[] | null>(null);
   const [amount, setAmount] = useState(NOTE_COUNT_OPTIONS[0]);
   const [graphType, setGraphType] = useState<GraphType>('line');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [error, setError] = useState('');
 
   // Notes carry the type of the category they were created with, so read it
@@ -94,6 +95,12 @@ export default function CategoryValuesModal({
           avg: numericPoints.reduce((sum, point) => sum + point.value, 0) / numericPoints.length,
         }
       : null;
+  const sortedValues = useMemo(() => {
+    if (!values) return null;
+    return [...values].sort((a, b) =>
+      sortOrder === 'asc' ? a.noteDate.localeCompare(b.noteDate) : b.noteDate.localeCompare(a.noteDate)
+    );
+  }, [values, sortOrder]);
 
   useEffect(() => {
     let cancelled = false;
@@ -188,6 +195,44 @@ export default function CategoryValuesModal({
                 ))}
               </select>
             </label>
+            <button
+              type="button"
+              className="icon-btn icon-btn-sm"
+              title={sortOrder === 'asc' ? t('notes.sortOldest') : t('notes.sortNewest')}
+              aria-label={sortOrder === 'asc' ? t('notes.sortOldest') : t('notes.sortNewest')}
+              aria-pressed={sortOrder === 'asc'}
+              onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                {sortOrder === 'asc' ? (
+                  <>
+                    <path d="M8 20V5" />
+                    <path d="m4 9 4-4 4 4" />
+                  </>
+                ) : (
+                  <>
+                    <path d="M8 4v15" />
+                    <path d="m4 15 4 4 4-4" />
+                  </>
+                )}
+                <text x="14" y={sortOrder === 'asc' ? '11' : '21'} fontSize="10" stroke="none" fill="currentColor">
+                  A
+                </text>
+                <text x="14" y={sortOrder === 'asc' ? '21' : '11'} fontSize="10" stroke="none" fill="currentColor">
+                  Z
+                </text>
+              </svg>
+            </button>
           </div>
         )}
         {selected && stats && numberFormat && (
@@ -223,13 +268,13 @@ export default function CategoryValuesModal({
               </li>
             ))}
           </ul>
-        ) : values === null ? (
+        ) : sortedValues === null ? (
           <p className="modal-text">{t('common.loading')}</p>
-        ) : values.length === 0 ? (
+        ) : sortedValues.length === 0 ? (
           <p className="modal-text">{t('notes.noValues')}</p>
         ) : (
           <ul className="value-list">
-            {values.map((note) => (
+            {sortedValues.map((note) => (
               <li key={note.id} className="value-item">
                 <span className="value-item-date">{formatDate(note.noteDate, i18n.language)}</span>
                 {note.category?.categoryType.type === 'Composite' ? (

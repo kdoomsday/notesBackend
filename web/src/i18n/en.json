@@ -295,6 +295,8 @@
     "deleted": "Deleted",
     "values": "Categories",
     "amount": "Amount",
+    "sortNewest": "Newest first",
+    "sortOldest": "Oldest first",
     "min": "Min",
     "max": "Max",
     "avg": "Avg",

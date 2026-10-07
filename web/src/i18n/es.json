@@ -295,6 +295,8 @@
     "deleted": "Eliminada",
     "values": "Categorías",
     "amount": "Cantidad",
+    "sortNewest": "Más recientes primero",
+    "sortOldest": "Más antiguas primero",
     "min": "Mín",
     "max": "Máx",
     "avg": "Prom",
