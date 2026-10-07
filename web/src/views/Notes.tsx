@@ -7,6 +7,7 @@ import {
   type Note,
   type Operator,
   type Patient,
+  type PatientInfo,
   type Shift,
   type TimeBlock,
 } from '../api/client';
@@ -15,6 +16,8 @@ import NoteCard from '../components/NoteCard';
 import CategoryValuesModal from '../components/CategoryValuesModal';
 import BackLink from '../components/BackLink';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import PatientHeader from '../components/PatientHeader';
+import PatientInfoEditModal from '../components/PatientInfoEditModal';
 
 interface NotesProps {
   me: Me;
@@ -24,6 +27,7 @@ interface NotesProps {
   onBack: () => void;
   onBackToPatients: () => void;
   onNavigateShift: (shift: Shift) => void;
+  onPatientUpdated: (patient: Patient) => void;
   onLogout: () => void;
 }
 
@@ -69,6 +73,7 @@ export default function Notes({
   onBack,
   onBackToPatients,
   onNavigateShift,
+  onPatientUpdated,
   onLogout,
 }: NotesProps) {
   const { t, i18n } = useTranslation();
@@ -78,6 +83,22 @@ export default function Notes({
   const [error, setError] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
   const [showValues, setShowValues] = useState(false);
+  const [showEditInfo, setShowEditInfo] = useState(false);
+  const [patientInfo, setPatientInfo] = useState<PatientInfo | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setPatientInfo(null);
+    authApi
+      .patientInfo(patient.id)
+      .then((data) => {
+        if (!cancelled) setPatientInfo(data);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [patient.id]);
 
   useEffect(() => {
     let source: EventSource | null = null;
@@ -184,6 +205,7 @@ export default function Notes({
         </div>
       </header>
       <main className="app-main">
+        <PatientHeader patient={patient} info={patientInfo} onEdit={() => setShowEditInfo(true)} />
         <BackLink label={t('notes.backToShifts')} onClick={onBack} />
         <div className="section-head section-head-row">
           <div>
@@ -246,6 +268,18 @@ export default function Notes({
               />
             ))}
           </div>
+        )}
+        {showEditInfo && (
+          <PatientInfoEditModal
+            patient={patient}
+            info={patientInfo}
+            onClose={() => setShowEditInfo(false)}
+            onSaved={(saved, savedInfo) => {
+              setPatientInfo(savedInfo);
+              onPatientUpdated(saved);
+              setShowEditInfo(false);
+            }}
+          />
         )}
       </main>
       {showValues && (

@@ -216,6 +216,7 @@ export default function App() {
           setSelectedPatient(null);
         }}
         onNavigateShift={setSelectedShift}
+        onPatientUpdated={setSelectedPatient}
         onLogout={handleLogout}
       />
     );
