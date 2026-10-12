@@ -4,10 +4,11 @@ import type { Patient, PatientInfo } from '../api/client';
 interface PatientHeaderProps {
   patient: Patient;
   info: PatientInfo | null;
+  canEdit?: boolean;
   onEdit?: () => void;
 }
 
-export default function PatientHeader({ patient, info, onEdit }: PatientHeaderProps) {
+export default function PatientHeader({ patient, info, canEdit, onEdit }: PatientHeaderProps) {
   const { t } = useTranslation();
 
   const infoLine = info
@@ -25,7 +26,7 @@ export default function PatientHeader({ patient, info, onEdit }: PatientHeaderPr
         <h2>{patient.name}</h2>
         {infoLine && <p className="patient-detail">{infoLine}</p>}
       </div>
-      {onEdit && (
+      {onEdit && canEdit && (
         <button
           type="button"
           className="icon-btn"

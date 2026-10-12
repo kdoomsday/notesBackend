@@ -206,6 +206,7 @@ export default function App() {
         patient={selectedPatient}
         shift={selectedShift}
         shifts={selectedShiftList}
+        canSetPatientInfo={permissions === null || permissions.has('Set Patient Info')}
         onBack={() => {
           setSelectedShift(null);
           setSelectedShiftList([]);
@@ -228,6 +229,7 @@ export default function App() {
         canListNotes={permissions === null || permissions.has('List Patient Notes')}
         canSetNotes={permissions === null || permissions.has('Set Patient Notes')}
         canDeleteNotes={permissions === null || permissions.has('Delete Patient Notes')}
+        canSetPatientInfo={permissions === null || permissions.has('Set Patient Info')}
         onBack={() => setSelectedPatient(null)}
         onPatientDeleted={handlePatientDeleted}
         onPatientUpdated={setSelectedPatient}

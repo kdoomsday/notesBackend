@@ -24,6 +24,7 @@ interface NotesProps {
   patient: Patient;
   shift: Shift;
   shifts: Shift[];
+  canSetPatientInfo: boolean;
   onBack: () => void;
   onBackToPatients: () => void;
   onNavigateShift: (shift: Shift) => void;
@@ -70,6 +71,7 @@ export default function Notes({
   patient,
   shift,
   shifts,
+  canSetPatientInfo,
   onBack,
   onBackToPatients,
   onNavigateShift,
@@ -205,7 +207,12 @@ export default function Notes({
         </div>
       </header>
       <main className="app-main">
-        <PatientHeader patient={patient} info={patientInfo} onEdit={() => setShowEditInfo(true)} />
+        <PatientHeader
+          patient={patient}
+          info={patientInfo}
+          canEdit={canSetPatientInfo}
+          onEdit={() => setShowEditInfo(true)}
+        />
         <BackLink label={t('notes.backToShifts')} onClick={onBack} />
         <div className="section-head section-head-row">
           <div>

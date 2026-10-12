@@ -14,6 +14,7 @@ interface ShiftsProps {
   canListNotes: boolean;
   canSetNotes: boolean;
   canDeleteNotes: boolean;
+  canSetPatientInfo: boolean;
   onBack: () => void;
   onPatientDeleted: () => void;
   onPatientUpdated: (patient: Patient) => void;
@@ -63,6 +64,7 @@ export default function Shifts({
   canListNotes,
   canSetNotes,
   canDeleteNotes,
+  canSetPatientInfo,
   onBack,
   onPatientDeleted,
   onPatientUpdated,
@@ -243,7 +245,7 @@ export default function Shifts({
         </div>
       </header>
       <main className="app-main">
-        <PatientHeader patient={patient} info={info} onEdit={openEditInfo} />
+        <PatientHeader patient={patient} info={info} canEdit={canSetPatientInfo} onEdit={openEditInfo} />
         <BackLink label={t('shifts.backToPatients')} onClick={onBack} />
         <div className="section-head section-head-row">
           <div>
