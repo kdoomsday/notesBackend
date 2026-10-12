@@ -1520,9 +1520,24 @@ img.login-logo {
   word-break: break-word;
 }
 
-/* A row an edit actually touched. The value is tinted rather than given a
-   background so the grid's column gap does not cut the highlight in two. */
-.history-change-changed {
+/* The value as it was before the edit, struck through, and the value it
+   became, tinted rather than given a background so the grid's column gap does
+   not cut the highlight in two. */
+.history-change-from {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.history-change-removed {
+  text-decoration: line-through;
+}
+
+.history-change-arrow {
+  margin: 0 6px;
+  color: var(--text-muted);
+}
+
+.history-change-to {
   color: var(--accent);
   font-weight: 600;
 }

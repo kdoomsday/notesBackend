@@ -312,7 +312,8 @@
       "created": "Created",
       "deleted": "Deleted",
       "restored": "Restored",
-      "category": "Category"
+      "category": "Category",
+      "date": "Date"
     }
   },
   "errors": {

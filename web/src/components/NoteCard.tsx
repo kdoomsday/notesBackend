@@ -95,18 +95,36 @@ function HistoryIcon() {
   );
 }
 
-/** Labelled rows sit side by side in one grid, so consecutive ones share a group. */
+/** Labelled transitions sit side by side in one grid, so consecutive ones share a group. */
 function groupBlocks(blocks: ChangeLogBlock[]): ChangeLogBlock[][] {
   const groups: ChangeLogBlock[][] = [];
   for (const block of blocks) {
     const current = groups[groups.length - 1];
-    if (block.kind === 'field' && current && current[0].kind === 'field') {
+    const labelled = block.kind === 'transition' && block.label !== null;
+    if (labelled && current && current[0].kind === 'transition' && current[0].label !== null) {
       current.push(block);
     } else {
       groups.push([block]);
     }
   }
   return groups;
+}
+
+function TransitionValue({ from, to }: { from: string | null; to: string | null }) {
+  if (from !== null && to !== null) {
+    return (
+      <>
+        <span className="history-change-from">{from}</span>
+        <span className="history-change-arrow" aria-hidden="true">
+          →
+        </span>
+        <span className="history-change-to">{to}</span>
+      </>
+    );
+  }
+  if (from !== null) return <span className="history-change-from history-change-removed">{from}</span>;
+  if (to !== null) return <span className="history-change-to">{to}</span>;
+  return null;
 }
 
 function ChangeBlocks({ blocks }: { blocks: ChangeLogBlock[] }) {
@@ -121,23 +139,21 @@ function ChangeBlocks({ blocks }: { blocks: ChangeLogBlock[] }) {
             </span>
           );
         }
-        if (first.kind === 'text') {
+        if (first.kind === 'transition' && first.label === null) {
           return (
             <span key={index} className="history-change-text">
-              {first.text}
+              <TransitionValue from={first.from} to={first.to} />
             </span>
           );
         }
         return (
           <dl key={index} className="composite-text">
             {group.map((block, position) =>
-              block.kind === 'field' ? (
+              block.kind === 'transition' ? (
                 <Fragment key={position}>
-                  <dt className={`composite-key${block.changed ? ' history-change-changed' : ''}`}>
-                    {block.label}
-                  </dt>
-                  <dd className={`composite-value${block.changed ? ' history-change-changed' : ''}`}>
-                    {block.value}
+                  <dt className="composite-key">{block.label}</dt>
+                  <dd className="composite-value">
+                    <TransitionValue from={block.from} to={block.to} />
                   </dd>
                 </Fragment>
               ) : null
@@ -162,7 +178,10 @@ export default function NoteCard({ note, authorName, operatorName, onLogout }: N
   const [history, setHistory] = useState<NoteUpdate[] | null>(null);
   const [historyError, setHistoryError] = useState('');
 
-  const historyChanges = useMemo(() => parseHistory(history ?? [], t), [history, t]);
+  const historyChanges = useMemo(
+    () => parseHistory(history ?? [], note, t, i18n.language),
+    [history, note, t, i18n.language]
+  );
 
   useEffect(() => {
     if (!expanded) return;
