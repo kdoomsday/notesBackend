@@ -361,7 +361,7 @@ export default function Operators({ me, onLogout }: OperatorsProps) {
                 <label className="field">
                   <span>{t('operators.pin')}</span>
                   <input
-                    type="text"
+                    type="password"
                     inputMode="numeric"
                     value={newPin}
                     onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
