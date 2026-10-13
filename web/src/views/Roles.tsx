@@ -333,7 +333,7 @@ export default function Roles({ me, onLogout }: RolesProps) {
                             disabled={togglingPerm === perm.id}
                             onChange={() => togglePermission(perm.id)}
                           />
-                          <span className="permission-name">{perm.name}</span>
+                          <span className="permission-name">{t(`permissions.${perm.name}`, { defaultValue: perm.name })}</span>
                         </label>
                       </li>
                     ))}
