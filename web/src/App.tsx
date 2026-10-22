@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authApi, myPermissions, type Me, type Patient, type Shift } from './api/client';
+import { serverErrorMessage } from './i18n';
+import { SECTIONS, sectionOf, useHashRoute, type Section } from './routing';
+import { orderedPatientShifts } from './shiftUtils';
 import { useToast } from './components/Toast';
 import { getLogoUrl, subscribeLogo } from './config';
 import Login from './views/Login';
@@ -13,8 +16,6 @@ import Users from './views/Users';
 import Roles from './views/Roles';
 import LanguageSwitcher from './components/LanguageSwitcher';
 
-type Section = 'patients' | 'categories' | 'operators' | 'users' | 'roles';
-
 const SECTION_PERMISSION: Record<Section, string> = {
   patients: 'List Patients',
   categories: 'List Categories',
@@ -23,7 +24,7 @@ const SECTION_PERMISSION: Record<Section, string> = {
   roles: 'List Roles',
 };
 
-function NavIcon({ name }: { name: 'patients' | 'categories' | 'operators' | 'users' | 'roles' }) {
+function NavIcon({ name }: { name: Section }) {
   if (name === 'patients') {
     return (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -105,40 +106,66 @@ function DefaultScreen({ me, onLogout }: DefaultScreenProps) {
   );
 }
 
+function LoadingScreen() {
+  const { t } = useTranslation();
+  return (
+    <div className="view">
+      <main className="app-main">
+        <p className="section-subtitle">{t('common.loading')}</p>
+      </main>
+    </div>
+  );
+}
+
 export default function App() {
   const { t } = useTranslation();
   const notify = useToast();
   const logoUrl = useSyncExternalStore(subscribeLogo, getLogoUrl);
+  const { route, navigate } = useHashRoute();
   const [me, setMe] = useState<Me | null>(null);
   const [checking, setChecking] = useState(true);
   const [permissions, setPermissions] = useState<Set<string> | null>(null);
-  const [section, setSection] = useState<Section>('patients');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [selectedShiftList, setSelectedShiftList] = useState<Shift[]>([]);
 
+  const routePatientId = route && route.kind !== 'section' ? route.patientId : null;
+  const routeShiftId = route && route.kind === 'shift' ? route.shiftId : null;
+  const section = route ? sectionOf(route) : 'patients';
+
   const handleLogout = useCallback(() => {
     setMe(null);
-    setSection('patients');
+    setPermissions(null);
     setSelectedPatient(null);
     setSelectedShift(null);
     setSelectedShiftList([]);
-  }, []);
+    navigate({ kind: 'section', section: 'patients' }, { replace: true });
+  }, [navigate]);
 
   const handlePatientDeleted = useCallback(() => {
+    setSelectedPatient(null);
     setSelectedShift(null);
     setSelectedShiftList([]);
-    setSelectedPatient(null);
-    setSection('patients');
+    navigate({ kind: 'section', section: 'patients' }, { replace: true });
     notify(t('patients.deleted'), 'warning');
-  }, [notify, t]);
+  }, [navigate, notify, t]);
 
-  const goToSection = useCallback((next: Section) => {
-    setSelectedPatient(null);
-    setSelectedShift(null);
-    setSelectedShiftList([]);
-    setSection(next);
-  }, []);
+  const goToSection = useCallback(
+    (next: Section) => {
+      navigate({ kind: 'section', section: next });
+    },
+    [navigate]
+  );
+
+  const openPatient = useCallback(
+    (patient: Patient) => {
+      setSelectedPatient(patient);
+      setSelectedShift(null);
+      setSelectedShiftList([]);
+      navigate({ kind: 'patient', patientId: patient.id });
+    },
+    [navigate]
+  );
 
   useEffect(() => {
     authApi
@@ -151,7 +178,6 @@ export default function App() {
   useEffect(() => {
     if (!me) {
       setPermissions(null);
-      setSection('patients');
       return;
     }
     let cancelled = false;
@@ -159,10 +185,6 @@ export default function App() {
       .then((perms) => {
         if (cancelled) return;
         setPermissions(perms);
-        const available = (Object.keys(SECTION_PERMISSION) as Section[]).find(
-          (sec) => perms.has(SECTION_PERMISSION[sec])
-        );
-        if (available) setSection(available);
       })
       .catch(() => {
         if (cancelled) return;
@@ -174,6 +196,119 @@ export default function App() {
   }, [me]);
 
   useEffect(() => {
+    if (!me || permissions === null) return;
+    const allowed = (sec: Section) => permissions.has(SECTION_PERMISSION[sec]);
+    if (route && allowed(sectionOf(route))) return;
+    const available = SECTIONS.find(allowed);
+    if (available) {
+      navigate({ kind: 'section', section: available }, { replace: true });
+    }
+  }, [me, permissions, route, navigate]);
+
+  useEffect(() => {
+    if (!me || permissions === null) return;
+
+    if (!routePatientId) {
+      if (selectedPatient !== null) setSelectedPatient(null);
+      if (selectedShift !== null) setSelectedShift(null);
+      if (selectedShiftList.length > 0) setSelectedShiftList([]);
+      return;
+    }
+
+    if (!permissions.has(SECTION_PERMISSION.patients)) return;
+
+    let cancelled = false;
+
+    async function resolve() {
+      let patient =
+        selectedPatient && selectedPatient.id === routePatientId ? selectedPatient : null;
+
+      if (!patient) {
+        try {
+          const patients = await authApi.patients();
+          if (cancelled) return;
+          patient = patients.find((p) => p.id === routePatientId && !p.deleted) ?? null;
+        } catch (err) {
+          if (cancelled) return;
+          notify(
+            serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('patients.title') }),
+            'error'
+          );
+          navigate({ kind: 'section', section: 'patients' }, { replace: true });
+          return;
+        }
+      }
+
+      if (cancelled) return;
+      if (!patient) {
+        navigate({ kind: 'section', section: 'patients' }, { replace: true });
+        return;
+      }
+
+      const resolvedPatient = patient;
+      setSelectedPatient(resolvedPatient);
+
+      if (!routeShiftId) {
+        if (selectedShift !== null) setSelectedShift(null);
+        if (selectedShiftList.length > 0) setSelectedShiftList([]);
+        return;
+      }
+
+      if (
+        selectedShift &&
+        selectedShift.id === routeShiftId &&
+        selectedShiftList.some((s) => s.id === routeShiftId)
+      ) {
+        return;
+      }
+
+      try {
+        const [shifts, blocks] = await Promise.all([authApi.shifts(), authApi.timeBlocks()]);
+        if (cancelled) return;
+        const shift = shifts.find(
+          (s) => s.id === routeShiftId && s.patientId === resolvedPatient.id
+        );
+        if (!shift) {
+          navigate({ kind: 'patient', patientId: resolvedPatient.id }, { replace: true });
+          return;
+        }
+        setSelectedShift(shift);
+        setSelectedShiftList(
+          orderedPatientShifts(
+            shifts,
+            blocks.filter((b) => !b.deleted),
+            resolvedPatient.id
+          )
+        );
+      } catch (err) {
+        if (cancelled) return;
+        notify(
+          serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('shifts.title') }),
+          'error'
+        );
+        navigate({ kind: 'patient', patientId: resolvedPatient.id }, { replace: true });
+      }
+    }
+
+    void resolve();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    me,
+    permissions,
+    routePatientId,
+    routeShiftId,
+    selectedPatient,
+    selectedShift,
+    selectedShiftList,
+    navigate,
+    notify,
+    t,
+  ]);
+
+  useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== 'Escape') return;
       const el = document.activeElement;
@@ -181,75 +316,86 @@ export default function App() {
       /* Views close their own modals on Escape, so the selection is only reset
        * once no modal is left open on top of it. */
       if (document.querySelector('.modal-backdrop')) return;
-      if (selectedShift) {
-        setSelectedShift(null);
-      } else if (selectedPatient) {
-        setSelectedPatient(null);
+      if (routeShiftId && routePatientId) {
+        navigate({ kind: 'patient', patientId: routePatientId }, { replace: true });
+      } else if (routePatientId) {
+        navigate({ kind: 'section', section: 'patients' }, { replace: true });
       }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedPatient, selectedShift]);
+  }, [routePatientId, routeShiftId, navigate]);
 
   if (checking) return null;
 
   if (!me) return <Login onLogin={setMe} />;
 
   const hasSection = (sec: Section) =>
-    permissions === null || permissions.has(SECTION_PERMISSION[sec]);
+    permissions !== null && permissions.has(SECTION_PERMISSION[sec]);
 
   let content: ReactNode;
-  if (selectedPatient && selectedShift) {
-    content = (
-      <Notes
-        me={me}
-        patient={selectedPatient}
-        shift={selectedShift}
-        shifts={selectedShiftList}
-        canSetPatientInfo={permissions === null || permissions.has('Set Patient Info')}
-        onBack={() => {
-          setSelectedShift(null);
-          setSelectedShiftList([]);
-        }}
-        onBackToPatients={() => {
-          setSelectedShift(null);
-          setSelectedShiftList([]);
-          setSelectedPatient(null);
-        }}
-        onNavigateShift={setSelectedShift}
-        onPatientUpdated={setSelectedPatient}
-        onLogout={handleLogout}
-      />
-    );
-  } else if (selectedPatient) {
-    content = (
+  if (permissions === null) {
+    content = <LoadingScreen />;
+  } else if (!route) {
+    const available = SECTIONS.find(hasSection);
+    content = available ? <LoadingScreen /> : <DefaultScreen me={me} onLogout={handleLogout} />;
+  } else if (route.kind === 'shift' && hasSection('patients')) {
+    content =
+      selectedPatient && selectedShift ? (
+        <Notes
+          me={me}
+          patient={selectedPatient}
+          shift={selectedShift}
+          shifts={selectedShiftList}
+          canSetPatientInfo={permissions.has('Set Patient Info')}
+          onBack={() => navigate({ kind: 'patient', patientId: selectedPatient.id })}
+          onBackToPatients={() => navigate({ kind: 'section', section: 'patients' })}
+          onNavigateShift={(nextShift) => {
+            setSelectedShift(nextShift);
+            navigate({
+              kind: 'shift',
+              patientId: selectedPatient.id,
+              shiftId: nextShift.id,
+            });
+          }}
+          onPatientUpdated={setSelectedPatient}
+          onLogout={handleLogout}
+        />
+      ) : (
+        <LoadingScreen />
+      );
+  } else if (route.kind === 'patient' && hasSection('patients')) {
+    content = selectedPatient ? (
       <Shifts
         me={me}
         patient={selectedPatient}
-        canListNotes={permissions === null || permissions.has('List Patient Notes')}
-        canSetNotes={permissions === null || permissions.has('Set Patient Notes')}
-        canDeleteNotes={permissions === null || permissions.has('Delete Patient Notes')}
-        canSetPatientInfo={permissions === null || permissions.has('Set Patient Info')}
-        onBack={() => setSelectedPatient(null)}
+        canListNotes={permissions.has('List Patient Notes')}
+        canSetNotes={permissions.has('Set Patient Notes')}
+        canDeleteNotes={permissions.has('Delete Patient Notes')}
+        canSetPatientInfo={permissions.has('Set Patient Info')}
+        onBack={() => navigate({ kind: 'section', section: 'patients' })}
         onPatientDeleted={handlePatientDeleted}
         onPatientUpdated={setSelectedPatient}
         onSelectShift={(shift, orderedShifts) => {
           setSelectedShift(shift);
           setSelectedShiftList(orderedShifts);
+          navigate({ kind: 'shift', patientId: selectedPatient.id, shiftId: shift.id });
         }}
         onLogout={handleLogout}
       />
+    ) : (
+      <LoadingScreen />
     );
-  } else if (section === 'categories' && hasSection('categories')) {
+  } else if (route.kind === 'section' && route.section === 'categories' && hasSection('categories')) {
     content = <Categories me={me} onLogout={handleLogout} />;
-  } else if (section === 'operators' && hasSection('operators')) {
+  } else if (route.kind === 'section' && route.section === 'operators' && hasSection('operators')) {
     content = <Operators me={me} onLogout={handleLogout} />;
-  } else if (section === 'users' && hasSection('users')) {
+  } else if (route.kind === 'section' && route.section === 'users' && hasSection('users')) {
     content = <Users me={me} onLogout={handleLogout} />;
-  } else if (section === 'roles' && hasSection('roles')) {
+  } else if (route.kind === 'section' && route.section === 'roles' && hasSection('roles')) {
     content = <Roles me={me} onLogout={handleLogout} />;
-  } else if (section === 'patients' && hasSection('patients')) {
-    content = <Patients me={me} onLogout={handleLogout} onSelectPatient={setSelectedPatient} />;
+  } else if (route.kind === 'section' && route.section === 'patients' && hasSection('patients')) {
+    content = <Patients me={me} onLogout={handleLogout} onSelectPatient={openPatient} />;
   } else {
     content = <DefaultScreen me={me} onLogout={handleLogout} />;
   }
@@ -261,7 +407,7 @@ export default function App() {
           {logoUrl ? <img className="sidebar-logo" src={logoUrl} alt="" /> : t('app.title')}
         </div>
         <nav className="sidebar-nav">
-          {(Object.keys(SECTION_PERMISSION) as Section[]).map((sec) =>
+          {SECTIONS.map((sec) =>
             hasSection(sec) ? (
               <button
                 key={sec}

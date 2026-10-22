@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, authApi, type Me, type Patient, type PatientInfo, type Shift, type TimeBlock } from '../api/client';
 import { serverErrorMessage } from '../i18n';
+import { isTimeInBlock, shiftComparer, todayString } from '../shiftUtils';
 import BackLink from '../components/BackLink';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import PatientHeader from '../components/PatientHeader';
@@ -26,36 +27,6 @@ function formatDate(value: string, locale: string): string {
   const date = new Date(`${value}T00:00:00`);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString(locale, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-function toMinutes(value: string): number {
-  const [hours, minutes] = value.split(':').map(Number);
-  return (hours || 0) * 60 + (minutes || 0);
-}
-
-function isTimeInBlock(nowMinutes: number, start: string, end: string): boolean {
-  const startMinutes = toMinutes(start);
-  const endMinutes = toMinutes(end);
-  if (startMinutes === endMinutes) return true;
-  if (startMinutes < endMinutes) return nowMinutes >= startMinutes && nowMinutes < endMinutes;
-  return nowMinutes >= startMinutes || nowMinutes < endMinutes;
-}
-
-function todayString(): string {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${now.getFullYear()}-${month}-${day}`;
-}
-
-function shiftComparer(timeBlocks: TimeBlock[], dateDirection: 1 | -1) {
-  return (a: Shift, b: Shift): number => {
-    const byDate = dateDirection * a.date.localeCompare(b.date);
-    if (byDate !== 0) return byDate; // Dates are different, this wins
-    const aStart = timeBlocks.find((tb) => tb.id === a.timeBlockId)?.startTime ?? '';
-    const bStart = timeBlocks.find((tb) => tb.id === b.timeBlockId)?.startTime ?? '';
-    return aStart.localeCompare(bStart);
-  };
 }
 
 export default function Shifts({
