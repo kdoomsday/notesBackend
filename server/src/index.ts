@@ -5,8 +5,11 @@ import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { config } from './config.js';
 import { proxyToNotes } from './proxy.js';
+import { registerWebSocketProxy } from './wsProxy.js';
 
 const app = Fastify({ logger: true });
+
+registerWebSocketProxy(app);
 
 app.all('/health', (request, reply) => {
   proxyToNotes(request, reply);

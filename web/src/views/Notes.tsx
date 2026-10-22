@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ApiError,
   authApi,
+  getToken,
   type Me,
   type Note,
   type Operator,
@@ -103,8 +104,50 @@ export default function Notes({
   }, [patient.id]);
 
   useEffect(() => {
-    let source: EventSource | null = null;
+    let socket: WebSocket | null = null;
+    let reconnectTimer: number | undefined;
+    let refreshTimer: number | undefined;
+    let requestId = 0;
     let cancelled = false;
+
+    function loadNotes(): Promise<void> {
+      const currentRequest = ++requestId;
+      return authApi.notesByShift(shift.id, true).then((shiftNotes) => {
+        if (!cancelled && currentRequest === requestId) setNotes(shiftNotes);
+      });
+    }
+
+    function handleRefreshError(err: unknown) {
+      if (cancelled) return;
+      if (err instanceof ApiError && err.status === 401) {
+        setNotes([]);
+        return;
+      }
+      setError(serverErrorMessage(err) || t('errors.couldNotLoad', { resource: t('notes.title') }));
+    }
+
+    function scheduleRefresh() {
+      if (refreshTimer !== undefined) window.clearTimeout(refreshTimer);
+      refreshTimer = window.setTimeout(() => {
+        refreshTimer = undefined;
+        loadNotes().catch(handleRefreshError);
+      }, 100);
+    }
+
+    function connect() {
+      const token = getToken();
+      if (cancelled || !token) return;
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const url = `${protocol}//${window.location.host}/api/shifts/${encodeURIComponent(shift.id)}/ws?token=${encodeURIComponent(token)}`;
+      const ws = new WebSocket(url);
+      socket = ws;
+      ws.addEventListener('message', scheduleRefresh);
+      ws.addEventListener('close', () => {
+        if (socket === ws) socket = null;
+        if (cancelled) return;
+        reconnectTimer = window.setTimeout(connect, 3000);
+      });
+    }
 
     Promise.all([authApi.notesByShift(shift.id, true), authApi.timeBlocks(), authApi.operators()])
       .then(([shiftNotes, blocks, ops]) => {
@@ -112,26 +155,7 @@ export default function Notes({
         setNotes(shiftNotes);
         setTimeBlocks(blocks.filter((b) => !b.deleted));
         setOperators(ops);
-
-        const since =
-          shiftNotes.reduce((max, n) => (n.updatedAt > max ? n.updatedAt : max), '') ||
-          new Date(0).toISOString();
-        source = new EventSource(`/api/notes/stream?since=${encodeURIComponent(since)}`);
-        source.addEventListener('note', (event) => {
-          let note: Note;
-          try {
-            note = JSON.parse((event as MessageEvent).data) as Note;
-          } catch {
-            return;
-          }
-          if (note.shiftId !== shift.id) return;
-          setNotes((prev) => {
-            if (!prev) return prev;
-            return prev.some((n) => n.id === note.id)
-              ? prev.map((n) => (n.id === note.id ? note : n))
-              : [...prev, note];
-          });
-        });
+        connect();
       })
       .catch((err: unknown) => {
         if (err instanceof ApiError && err.status === 401) {
@@ -145,7 +169,9 @@ export default function Notes({
 
     return () => {
       cancelled = true;
-      source?.close();
+      if (reconnectTimer !== undefined) window.clearTimeout(reconnectTimer);
+      if (refreshTimer !== undefined) window.clearTimeout(refreshTimer);
+      socket?.close();
     };
   }, [shift.id, t]);
 
